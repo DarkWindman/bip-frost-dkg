@@ -94,6 +94,23 @@ def generate_participant_step1_group(t, n):
             "comment": "invalid threshold value t = 0",
         }
     )
+    # --- Error test case 1b: Invalid threshold t > n ---
+    tc_id += 1
+    invalid_params = chilldkg.SessionParams(hostpubkeys, n + 1)
+    error = expect_exception(
+        lambda: participant_step1(hostseckeys[0], invalid_params, random),
+        chilldkg.ThresholdOrCountError,
+    )
+    error_cases.append(
+        {
+            "tc_id": tc_id,
+            "hostseckey": bytes_to_hex(hostseckeys[0]),
+            "params": params_asdict(invalid_params),
+            "random": bytes_to_hex(random),
+            "expected_error": error,
+            "comment": "invalid threshold value t > n",
+        }
+    )
     # --- Error test case 2: hostpubkeys list contains an invalid value ---
     tc_id += 1
     invalid_hostpubkey = b"\x03" + 31 * b"\x00" + b"\x05"  # Invalid x-coordinate
@@ -111,6 +128,25 @@ def generate_participant_step1_group(t, n):
             "random": bytes_to_hex(random),
             "expected_error": error,
             "comment": "hostpubkeys list contains an invalid value",
+        }
+    )
+    # --- Error test case 2b: hostpubkeys list contains an infinite value ---
+    tc_id += 1
+    infinity_hostpubkey = b"\x00" * 33  # Infinite point
+    with_infinity = [hostpubkeys[0], infinity_hostpubkey, hostpubkeys[2]]
+    invalid_params = chilldkg.SessionParams(with_infinity, t)
+    error = expect_exception(
+        lambda: participant_step1(hostseckeys[0], invalid_params, random),
+        chilldkg.InvalidHostPubkeyError,
+    )
+    error_cases.append(
+        {
+            "tc_id": tc_id,
+            "hostseckey": bytes_to_hex(hostseckeys[0]),
+            "params": params_asdict(invalid_params),
+            "random": bytes_to_hex(random),
+            "expected_error": error,
+            "comment": "hostpubkeys list contains an infinite value",
         }
     )
     # --- Error test case 3: hostpubkeys list contains duplicate values ---
@@ -264,6 +300,23 @@ def generate_participant_step2_group(t, n):
             "comment": "invalid cmsg1: pubnonces list has an invalid value at index 0",
         }
     )
+    # --- Error Test Case 0b: pubnonces list in cmsg1 has an infinite value at index 0 ---
+    tc_id += 1
+    invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
+    invalid_cmsg1_parsed.enc_cmsg.pubnonces[0] = b"\x00" * 33  # infinity
+    invalid_cmsg1 = invalid_cmsg1_parsed.to_bytes()
+    error = expect_exception(
+        lambda: participant_step2(hostseckeys[0], pstates1[0], invalid_cmsg1, aux_rand),
+        chilldkg.FaultyCoordinatorError,
+    )
+    error_cases.append(
+        {
+            "tc_id": tc_id,
+            "cmsg1": bytes_to_hex(invalid_cmsg1),
+            "expected_error": error,
+            "comment": "invalid cmsg1: pubnonces list has an infinity at index 0",
+        }
+    )
     # --- Error Test Case 1: coms_to_secret list in cmsg1 has an invalid value at index 0 ---
     tc_id += 1
     invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
@@ -341,6 +394,27 @@ def generate_participant_step2_group(t, n):
                 "cmsg1": bytes_to_hex(invalid_cmsg1),
                 "expected_error": error,
                 "comment": "invalid cmsg1: sum_coms_to_nonconst_terms has an invalid value at index 0",
+            }
+        )
+        # --- Error Test Case 4b: sum_coms_to_nonconst_terms has an infinite value at index 0 ---
+        tc_id += 1
+        invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
+        invalid_cmsg1_parsed.enc_cmsg.simpl_cmsg.sum_coms_to_nonconst_terms[0] = (
+            GE()  # Infinity
+        )
+        invalid_cmsg1 = invalid_cmsg1_parsed.to_bytes()
+        error = expect_exception(
+            lambda: participant_step2(
+                hostseckeys[0], pstates1[0], invalid_cmsg1, aux_rand
+            ),
+            chilldkg.UnknownFaultyParticipantOrCoordinatorError,
+        )
+        error_cases.append(
+            {
+                "tc_id": tc_id,
+                "cmsg1": bytes_to_hex(invalid_cmsg1),
+                "expected_error": error,
+                "comment": "invalid cmsg1: sum_coms_to_nonconst_terms has an infinity at index 0",
             }
         )
     # --- Error Test Case 5: Participant 1 sent an invalid secshare for participant 0 ---
