@@ -68,7 +68,7 @@
                     "expected_error": {
                         "type": "ThresholdOrCountError"
                     },
-                    "comment": "invalid threshold value"
+                    "comment": "invalid threshold value t = 0"
                 },
                 {
                     "tc_id": 4,
@@ -198,7 +198,7 @@
                     "expected_error": {
                         "type": "ThresholdOrCountError"
                     },
-                    "comment": "invalid threshold value"
+                    "comment": "invalid threshold value t = 0"
                 },
                 {
                     "tc_id": 4,
@@ -328,7 +328,7 @@
                     "expected_error": {
                         "type": "ThresholdOrCountError"
                     },
-                    "comment": "invalid threshold value"
+                    "comment": "invalid threshold value t = 0"
                 },
                 {
                     "tc_id": 4,

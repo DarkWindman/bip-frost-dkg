@@ -77,7 +77,7 @@ def generate_participant_step1_group(t, n):
             "comment": "length of host secret key is not 32 bytes",
         }
     )
-    # --- Error test case 1: Invalid threshold ---
+    # --- Error test case 1: Invalid threshold t = 0 ---
     tc_id += 1
     invalid_params = chilldkg.SessionParams(hostpubkeys, 0)
     error = expect_exception(
@@ -91,7 +91,7 @@ def generate_participant_step1_group(t, n):
             "params": params_asdict(invalid_params),
             "random": bytes_to_hex(random),
             "expected_error": error,
-            "comment": "invalid threshold value",
+            "comment": "invalid threshold value t = 0",
         }
     )
     # --- Error test case 2: hostpubkeys list contains an invalid value ---
