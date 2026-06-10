@@ -65,7 +65,7 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     assert len(short_hostseckey) == 16
     error = expect_exception(
         lambda: participant_step1(short_hostseckey, params, random),
-        chilldkg.HostSeckeyError,
+        ValueError,
     )
     error_cases.append(
         {
@@ -75,6 +75,40 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
             "random": bytes_to_hex(random),
             "expectedError": error,
             "comment": "length of host secret key is not 32 bytes",
+        }
+    )
+    # --- Error Test Case 0b: hostseckey is zero ---
+    tc_id += 1
+    zero_hostseckey = b"\x00" * 32
+    error = expect_exception(
+        lambda: participant_step1(zero_hostseckey, params, random),
+        chilldkg.HostSeckeyError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(zero_hostseckey),
+            "params": params_asdict(params),
+            "random": bytes_to_hex(random),
+            "expectedError": error,
+            "comment": "hostseckey is zero",
+        }
+    )
+    # --- Error Test Case 0с: hostseckey is overflow ---
+    tc_id += 1
+    overflow_hostseckey = b"\xff" * 32
+    error = expect_exception(
+        lambda: participant_step1(overflow_hostseckey, params, random),
+        chilldkg.HostSeckeyError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(overflow_hostseckey),
+            "params": params_asdict(params),
+            "random": bytes_to_hex(random),
+            "expectedError": error,
+            "comment": "hostseckey >= group order",
         }
     )
     # --- Error test case 1: Invalid threshold ---
@@ -156,7 +190,7 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     assert len(short_random) == 16
     error = expect_exception(
         lambda: participant_step1(hostseckeys[0], params, short_random),
-        chilldkg.RandomnessError,
+        ValueError,
     )
     error_cases.append(
         {
@@ -166,6 +200,23 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
             "random": bytes_to_hex(short_random),
             "expectedError": error,
             "comment": "length of randomness is not 32 bytes",
+        }
+    )
+    # --- Error test case 5: Zero randomness length ---
+    tc_id += 1
+    zero_random = b"\x00" * 32
+    error = expect_exception(
+        lambda: participant_step1(hostseckeys[0], params, zero_random),
+        chilldkg.RandomnessError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(hostseckeys[0]),
+            "params": params_asdict(params),
+            "random": bytes_to_hex(zero_random),
+            "expectedError": error,
+            "comment": "randomness is zero",
         }
     )
 
@@ -246,7 +297,72 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
     cmsg1_parsed = chilldkg.CoordinatorMsg1.from_bytes(
         cmsg1, params.t, len(params.hostpubkeys)
     )
-    # --- Error Test Case 0: pubnonces list in cmsg1 has an invalid value at index 0 ---
+    # --- Error test case 0: Wrong hostseckey length ---
+    tc_id += 1
+    short_hostseckey = bytes.fromhex("631C047D50A67E45E27ED1FF25FCE179")
+    assert len(short_hostseckey) == 16
+    error = expect_exception(
+        lambda: participant_step2(short_hostseckey, pstates1[0], cmsg1, aux_rand),
+        ValueError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(short_hostseckey),
+            "cmsg1": bytes_to_hex(cmsg1),
+            "expectedError": error,
+            "comment": "wrong hostseckey length",
+        }
+    )
+    # --- Error Test Case 0b: hostseckey is zero ---
+    tc_id += 1
+    zero_hostseckey = bytes(32)
+    error = expect_exception(
+        lambda: participant_step2(zero_hostseckey, pstates1[0], cmsg1, aux_rand),
+        chilldkg.HostSeckeyError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(zero_hostseckey),
+            "cmsg1": bytes_to_hex(cmsg1),
+            "expectedError": error,
+            "comment": "hostseckey is zero",
+        }
+    )
+    # --- Error Test Case 0c: hostseckey >= group order ---
+    tc_id += 1
+    overflow_hostseckey = b"\xff" * 32
+    error = expect_exception(
+        lambda: participant_step2(overflow_hostseckey, pstates1[0], cmsg1, aux_rand),
+        chilldkg.HostSeckeyError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(overflow_hostseckey),
+            "cmsg1": bytes_to_hex(cmsg1),
+            "expectedError": error,
+            "comment": "hostseckey >= group order",
+        }
+    )
+    # --- Error Test Case 0d: hostseckey does not match the one in state1 ---
+    tc_id += 1
+    mismatched_hostseckey = hostseckeys[1]
+    error = expect_exception(
+        lambda: participant_step2(mismatched_hostseckey, pstates1[0], cmsg1, aux_rand),
+        chilldkg.HostSeckeyError,
+    )
+    error_cases.append(
+        {
+            "tcId": tc_id,
+            "hostseckey": bytes_to_hex(mismatched_hostseckey),
+            "cmsg1": bytes_to_hex(cmsg1),
+            "expectedError": error,
+            "comment": "hostseckey does not match the one used in participant_step1",
+        }
+    )
+    # --- Error Test Case 1: pubnonces list in cmsg1 has an invalid value at index 0 ---
     tc_id += 1
     invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
     invalid_cmsg1_parsed.enc_cmsg.pubnonces[0] = b"\xeb" * 32  # random pubnonce
@@ -263,7 +379,7 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
             "comment": "invalid cmsg1: pubnonces list has an invalid value at index 0",
         }
     )
-    # --- Error Test Case 1: coms_to_secret list in cmsg1 has an invalid value at index 0 ---
+    # --- Error Test Case 2: coms_to_secret list in cmsg1 has an invalid value at index 0 ---
     tc_id += 1
     invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
     invalid_cmsg1_parsed.enc_cmsg.simpl_cmsg.coms_to_secrets[0] = GE.lift_x(
@@ -282,7 +398,7 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
             "comment": "invalid cmsg1: coms_to_secret list has an invalid value at index 0",
         }
     )
-    # --- Error Test Case 2: coms_to_secret list in cmsg1 has infinity at index 1 ---
+    # --- Error Test Case 3: coms_to_secret list in cmsg1 has infinity at index 1 ---
     tc_id += 1
     invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
     invalid_cmsg1_parsed.enc_cmsg.simpl_cmsg.coms_to_secrets[1] = GE()  # infinity
@@ -299,7 +415,7 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
             "comment": "invalid cmsg1: coms_to_secret list has infinity at index 1",
         }
     )
-    # --- Error Test Case 3: pop list in cmsg1 has an invalid value at index 1 ---
+    # --- Error Test Case 4: pop list in cmsg1 has an invalid value at index 1 ---
     tc_id += 1
     invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
     invalid_cmsg1_parsed.enc_cmsg.simpl_cmsg.pops[1] = bytes.fromhex(
@@ -319,7 +435,7 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
         }
     )
     if t > 1:
-        # --- Error Test Case 4: sum_coms_to_nonconst_terms has an invalid value at index 0 ---
+        # --- Error Test Case 5: sum_coms_to_nonconst_terms has an invalid value at index 0 ---
         tc_id += 1
         invalid_cmsg1_parsed = copy.deepcopy(cmsg1_parsed)
         invalid_cmsg1_parsed.enc_cmsg.simpl_cmsg.sum_coms_to_nonconst_terms[0] = (
@@ -342,7 +458,7 @@ def generate_participant_step2_group(t, n, tc_id_init=0):
                 "comment": "invalid cmsg1: sum_coms_to_nonconst_terms has an invalid value at index 0",
             }
         )
-    # --- Error Test Case 5: Participant 1 sent an invalid secshare for participant 0 ---
+    # --- Error Test Case 6: Participant 1 sent an invalid secshare for participant 0 ---
     tc_id += 1
     invalid_pmsgs1 = copy.deepcopy(pmsgs1)
     pmsgs11_parsed = chilldkg.ParticipantMsg1.from_bytes(

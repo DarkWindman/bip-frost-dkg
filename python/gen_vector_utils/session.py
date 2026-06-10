@@ -49,9 +49,7 @@ def generate_hostpubkey_vectors():
     tc_id += 1
     short_hostseckey = bytes.fromhex("631C047D50A67E45E27ED1FF25FCE179")
     assert len(short_hostseckey) == 16
-    error = expect_exception(
-        lambda: hostpubkey_gen(short_hostseckey), chilldkg.HostSeckeyError
-    )
+    error = expect_exception(lambda: hostpubkey_gen(short_hostseckey), ValueError)
     error_cases.append(
         {
             "tcId": tc_id,
@@ -397,9 +395,7 @@ def generate_recover_vectors():
     tc_id += 1
     short_hostseckey = bytes.fromhex("631C047D50A67E45E27ED1FF25FCE179")
     assert len(short_hostseckey) == 16
-    error = expect_exception(
-        lambda: recover(short_hostseckey, crec), chilldkg.HostSeckeyError
-    )
+    error = expect_exception(lambda: recover(short_hostseckey, crec), ValueError)
     error_cases.append(
         {
             "tcId": tc_id,
