@@ -6,6 +6,11 @@ not use for anything but tests.
 The public API consists of all functions with docstrings, including the types in
 their arguments and return values, and the exceptions they raise; see also the
 `__all__` list. All other definitions are internal.
+
+In addition to the exceptions documented for each function, all public API
+functions may raise built-in exceptions such as `TypeError` or `ValueError` when
+called with arguments of unexpected structure (e.g., wrong type or wrong
+length). These structural errors are not documented per-function.
 """
 
 from __future__ import annotations
@@ -28,8 +33,6 @@ from .util import (
     UnknownFaultyParticipantOrCoordinatorError,
     FaultyParticipantError,
     MsgParseError,
-    ParticipantMsgParseError,
-    CoordinatorMsgParseError,
 )
 
 __all__ = [
@@ -44,8 +47,9 @@ __all__ = [
     "coordinator_finalize",
     "coordinator_investigate",
     "recover",
+    "participant_recovery_ack_sign",
+    "participant_recovery_acks_verify",
     # Exceptions
-    "InvalidSignatureInCertificateError",
     "HostSeckeyError",
     "SessionParamsError",
     "InvalidHostPubkeyError",
@@ -58,6 +62,7 @@ __all__ = [
     "FaultyCoordinatorError",
     "UnknownFaultyParticipantOrCoordinatorError",
     "RecoveryDataError",
+    "InvalidRecoveryAckError",
     # Types
     "SessionParams",
     "DKGOutput",
@@ -82,6 +87,7 @@ def certeq_message(x: bytes, idx: int) -> bytes:
     # Domain separation as described in BIP 340
     prefix = (BIP_TAG + "certeq message").encode()
     prefix = prefix + b"\x00" * (33 - len(prefix))
+    assert len(prefix) == 33
     return prefix + idx.to_bytes(4, "big") + x
 
 
@@ -123,6 +129,26 @@ class InvalidSignatureInCertificateError(ValueError):
 
 
 ###
+### Recovery acknowledgment helpers
+###
+
+
+def recovery_ack_message(x: bytes, idx: int) -> bytes:
+    # Domain separation as described in BIP 340
+    prefix = (BIP_TAG + "recovery acknowledgment").encode()
+    prefix = prefix + b"\x00" * (33 - len(prefix))
+    assert len(prefix) == 33
+    return prefix + idx.to_bytes(4, "big") + x
+
+
+def recovery_ack_sign(
+    hostseckey: bytes, idx: int, x: bytes, aux_rand: bytes
+) -> bytes:
+    msg = recovery_ack_message(x, idx)
+    return schnorr_sign(msg, hostseckey, aux_rand=aux_rand)
+
+
+###
 ### Host keys
 ###
 
@@ -158,11 +184,10 @@ def hostpubkey_gen(hostseckey: bytes) -> bytes:
         The host public key (33 bytes).
 
     Raises:
-        HostSeckeyError: If the length of `hostseckey` is not 32 bytes or if the
-            key is invalid.
+        HostSeckeyError: If the host secret key is invalid.
     """
     if len(hostseckey) != 32:
-        raise HostSeckeyError
+        raise ValueError
 
     try:
         return pubkey_gen_plain(hostseckey)
@@ -171,9 +196,7 @@ def hostpubkey_gen(hostseckey: bytes) -> bytes:
 
 
 class HostSeckeyError(ValueError):
-    """Raised if the host secret key is invalid.
-
-    This incluces the case that its length is not 32 bytes."""
+    """Raised if the host secret key is invalid."""
 
 
 ###
@@ -527,16 +550,16 @@ def participant_step1(
         bytes: The first message to be sent to the coordinator.
 
     Raises:
-        HostSeckeyError: If the length of `hostseckey` is not 32 bytes, if the
-            key is invalid, or if the key does not match any entry of
-            `hostpubkeys`.
+        HostSeckeyError: If the host secret key is invalid, or if the key does not
+            match any entry of `hostpubkeys`.
         InvalidHostPubkeyError: If `hostpubkeys` contains an invalid public key.
         DuplicateHostPubkeyError: If `hostpubkeys` contains duplicates.
         ThresholdOrCountError: If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
             not hold.
-        RandomnessError: If the length of `random` is not 32 bytes.
+        RandomnessError: If `random` is all zeroes (i.e., b"\\x00" * 32). This check
+            guards against the case of a malfunctioning random number generator.
     """
-    hostpubkey = hostpubkey_gen(hostseckey)  # HostSeckeyError if len(hostseckey) != 32
+    hostpubkey = hostpubkey_gen(hostseckey)  # ValueError if len(hostseckey) != 32
 
     params_validate(params)
     (hostpubkeys, t) = params
@@ -548,6 +571,8 @@ def participant_step1(
             "Host secret key does not match any host public key"
         ) from e
     if len(random) != 32:
+        raise ValueError
+    if random == b"\x00" * 32:
         raise RandomnessError
 
     enc_state, enc_pmsg = encpedpop.participant_step1(
@@ -561,7 +586,7 @@ def participant_step1(
         enckeys=hostpubkeys,
         idx=idx,
         random=random,
-    )  # HostSeckeyError if len(hostseckey) != 32
+    )
 
     state1 = ParticipantState1(params, idx, enc_state)
     pmsg1 = enc_pmsg
@@ -569,7 +594,7 @@ def participant_step1(
 
 
 class RandomnessError(ValueError):
-    """Raised if the length of the provided randomness is not 32 bytes."""
+    """Raised if the provided randomness is all zeroes (i.e., b"\\x00" * 32)."""
 
 
 def participant_step2(
@@ -609,8 +634,8 @@ def participant_step2(
         bytes: The second message to be sent to the coordinator.
 
     Raises:
-        HostSeckeyError: If the length of `hostseckey` is not 32 bytes.
-        RandomnessError: If the length of `aux_rand` is not 32 bytes.
+        HostSeckeyError: If the host secret key is invalid or if it does not match the one
+            used in `participant_step1`.
         FaultyCoordinatorError: If the coordinator is faulty. See the
             documentation of the exception for further details.
         FaultyParticipantOrCoordinatorError: If another known participant or the
@@ -622,17 +647,22 @@ def participant_step2(
             suspected participant. See the documentation of the exception for
             further details.
     """
-    if len(hostseckey) != 32:
-        raise HostSeckeyError
+    hostpubkey = hostpubkey_gen(
+        hostseckey
+    )  # HostSeckeyError if invalid or ValueError if len(hostseckey) != 32
     if len(aux_rand) != 32:
-        raise RandomnessError
+        raise ValueError
 
     params, idx, enc_state = state1
+    if hostpubkey != params.hostpubkeys[idx]:
+        raise HostSeckeyError(
+            "Host secret key does not match the one used in participant_step1"
+        )
     t = enc_state.simpl_state.t
     try:
         cmsg1_parsed = CoordinatorMsg1.from_bytes(cmsg1, t, len(params.hostpubkeys))
     except MsgParseError as e:
-        raise CoordinatorMsgParseError(*e.args) from e
+        raise FaultyCoordinatorError(*e.args) from e
     enc_cmsg, enc_secshares = cmsg1_parsed
 
     enc_dkg_output, eq_input = encpedpop.participant_step2(
@@ -666,10 +696,31 @@ def participant_finalize(
     the session successful by presenting the recovery data to them, from which
     they can recover the DKG outputs using the `recover` function.
 
+    Since returning successfully does not imply that other participants deem
+    the DKG session successful, returning successfully also does not imply
+    that redundant copies of the recovery data exist. For example, it could
+    be the case that other participants raised an exception instead, and this
+    participant will be the only one that obtained the recovery data. In that
+    case, if this participant's storage fails, the only copy of the recovery
+    data is lost. As a result, this participant will not be able to convince
+    any other participants to deem the DKG session successful, and it will
+    not be possible to create a signature.
+
+    To protect against this scenario, callers should ensure that all
+    participants deem the DKG session successful (which also implies that
+    they have a redundant copy of the recovery data) before using the
+    threshold public key (e.g., before sending funds to it). The recommended
+    way of doing so is by collecting acknowledgment signatures via
+    `participant_recovery_ack_sign`. Callers can alternatively employ some
+    other means to ensure that they will always have access to the recovery
+    data (which can be used to convince other participants that the DKG
+    session was successful). For example, they could use a custom redundant
+    way of backing up the recovery data.
+
     **Warning:**
     Changing perspectives, this implies that, even when obtaining an exception,
     this participant **must not** conclude that the DKG session has failed, and
-    as a consequence, this particiant **must not** erase the hostseckey. The
+    as a consequence, this participant **must not** erase the hostseckey. The
     underlying reason is that some other participant may deem the DKG session
     successful and use the resulting threshold public key (e.g., by sending
     funds to it). That other participant can, at any point in the future,
@@ -696,7 +747,7 @@ def participant_finalize(
         cmsg2_parsed = CoordinatorMsg2.from_bytes(cmsg2, len(params.hostpubkeys))
         certeq_verify(params.hostpubkeys, eq_input, cmsg2_parsed.cert)
     except MsgParseError as e:
-        raise CoordinatorMsgParseError(*e.args) from e
+        raise FaultyCoordinatorError(*e.args) from e
     except InvalidSignatureInCertificateError as e:
         raise FaultyParticipantOrCoordinatorError(
             e.participant,
@@ -736,7 +787,7 @@ def participant_investigate(
     try:
         cinv_parsed = CoordinatorInvestigationMsg.from_bytes(cinv, n)
     except MsgParseError as e:
-        raise CoordinatorMsgParseError(*e.args) from e
+        raise FaultyCoordinatorError(*e.args) from e
     encpedpop.participant_investigate(
         error=error,
         cinv=cinv_parsed.enc_cinv.to_bytes(),
@@ -776,7 +827,7 @@ def coordinator_step1(
         DuplicateHostPubkeyError: If `hostpubkeys` contains duplicates.
         ThresholdOrCountError: If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
             not hold.
-        FaultyParticipantError: If another participant is faulty. See the
+        FaultyParticipantError: If a participant is faulty. See the
             documentation of the exception for further details.
     """
     params_validate(params)
@@ -789,7 +840,7 @@ def coordinator_step1(
         try:
             parsed = ParticipantMsg1.from_bytes(pmsg1, t, len(hostpubkeys))
         except MsgParseError as e:
-            raise ParticipantMsgParseError(idx, *e.args) from e
+            raise FaultyParticipantError(idx, *e.args) from e
         pmsgs1_parsed.append(parsed)
 
     enc_cmsg, enc_dkg_output, eq_input, enc_secshares = encpedpop.coordinator_step(
@@ -840,7 +891,7 @@ def coordinator_finalize(
         bytes: The serialized recovery data.
 
     Raises:
-        FaultyParticipantError: If another participant is faulty. See the
+        FaultyParticipantError: If a participant is faulty. See the
             documentation of the exception for further details.
     """
     params, eq_input, dkg_output = state
@@ -852,7 +903,7 @@ def coordinator_finalize(
         try:
             parsed = ParticipantMsg2.from_bytes(pmsg2)
         except MsgParseError as e:
-            raise ParticipantMsgParseError(idx, *e.args) from e
+            raise FaultyParticipantError(idx, *e.args) from e
         pmsgs2_parsed.append(parsed)
     cert = certeq_coordinator_step([pmsg2.sig for pmsg2 in pmsgs2_parsed])
     try:
@@ -885,7 +936,7 @@ def coordinator_investigate(pmsgs: List[bytes], params: SessionParams) -> List[b
             participant.
 
     Raises:
-        FaultyParticipantError: If another participant is faulty. See the
+        FaultyParticipantError: If a participant is faulty. See the
             documentation of the exception for further details.
     """
     n = len(pmsgs)
@@ -895,7 +946,7 @@ def coordinator_investigate(pmsgs: List[bytes], params: SessionParams) -> List[b
         try:
             parsed = ParticipantMsg1.from_bytes(pmsg, t, n)
         except MsgParseError as e:
-            raise ParticipantMsgParseError(idx, *e.args) from e
+            raise FaultyParticipantError(idx, *e.args) from e
         pmsgs_parsed.append(parsed)
     enc_cinvs = encpedpop.coordinator_investigate(
         [pmsg.enc_pmsg.to_bytes() for pmsg in pmsgs_parsed], t
@@ -931,8 +982,8 @@ def recover(
         SessionParams: The common parameters of the recovered session.
 
     Raises:
-        HostSeckeyError: If the length of `hostseckey` is not 32 bytes, if the
-            key is invalid, or if the key does not match the recovery data.
+        HostSeckeyError: If the host secret key is invalid, or if the key does not
+            match the recovery data.
             (This can also occur if the recovery data is invalid.)
         RecoveryDataError: If recovery failed due to invalid recovery data.
     """
@@ -963,7 +1014,7 @@ def recover(
     pubshares = [sum_coms.pubshare(i) for i in range(n)]
 
     if hostseckey:
-        hostpubkey = hostpubkey_gen(hostseckey)  # HostSeckeyError
+        hostpubkey = hostpubkey_gen(hostseckey)  # ValueError or HostSeckeyError
         try:
             idx = hostpubkeys.index(hostpubkey)
         except ValueError as e:
@@ -999,3 +1050,137 @@ def recover(
 
 class RecoveryDataError(ValueError):
     """Raised if the recovery data is invalid."""
+
+
+###
+### Recovery acknowledgment
+###
+
+
+def participant_recovery_ack_sign(
+    hostseckey: bytes, recovery_data: RecoveryData, params: SessionParams, aux_rand: bytes
+) -> bytes:
+    """Sign recovery data to create a recovery acknowledgment.
+
+    This function allows a participant to create an explicit acknowledgment
+    signature on the recovery data. This can be used for an optional
+    acknowledgment round where participants acknowledge that they have
+    successfully received the complete recovery data.
+
+    Arguments:
+        hostseckey: Participant's long-term host secret key (32 bytes).
+        recovery_data: Recovery data from a successful session.
+        params: Common session parameters.
+        aux_rand: Auxiliary randomness (32 bytes). FRESH 32-byte randomness
+            is optimal, but 16 random bytes or a counter padded to 32 bytes
+            is acceptable (see BIP 340).
+
+    Returns:
+        bytes: Acknowledgment signature (64 bytes).
+
+    Raises:
+        HostSeckeyError: If the length of `hostseckey` is not 32 bytes, if the
+            key is invalid, or if the key does not match any host public key.
+        InvalidHostPubkeyError: If `hostpubkeys` contains an invalid public key.
+        DuplicateHostPubkeyError: If `hostpubkeys` contains duplicates.
+        ThresholdOrCountError: If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
+            not hold.
+        RandomnessError: If the length of `aux_rand` is not 32 bytes.
+        RecoveryDataError: If the recovery data is invalid or does not match
+            the provided parameters.
+    """
+    hostpubkey = hostpubkey_gen(hostseckey)  # HostSeckeyError if len(hostseckey) != 32
+
+    params_validate(params)
+    (hostpubkeys, t) = params
+
+    try:
+        idx = hostpubkeys.index(hostpubkey)
+    except ValueError as e:
+        raise HostSeckeyError(
+            "Host secret key does not match any host public key"
+        ) from e
+    if len(aux_rand) != 32:
+        raise RandomnessError
+
+    try:
+        (t_rec, _, hostpubkeys_rec, _, _, _) = deserialize_recovery_data(recovery_data)
+    except Exception as e:
+        raise RecoveryDataError("Failed to deserialize recovery data") from e
+
+    if t_rec != t or hostpubkeys_rec != hostpubkeys:
+        raise RecoveryDataError(
+            "Recovery data does not match the provided session parameters"
+        )
+
+    sig = recovery_ack_sign(hostseckey, idx, recovery_data, aux_rand)
+    return sig
+
+
+def participant_recovery_acks_verify(
+    recovery_data: RecoveryData, params: SessionParams, ack_sigs: List[bytes]
+) -> None:
+    """Verify recovery acknowledgment signatures from all participants.
+
+    This function is used to ensure that all participants have
+    received the recovery data before the threshold public key is used
+    (e.g., before funds are sent to it).
+
+    Arguments:
+        recovery_data: Recovery data from a successful session.
+        params: Common session parameters.
+        ack_sigs: List of acknowledgment signatures (64 bytes each)
+            from all participants, in the same order as `hostpubkeys`.
+
+    Raises:
+        InvalidHostPubkeyError: If `hostpubkeys` contains an invalid public key.
+        DuplicateHostPubkeyError: If `hostpubkeys` contains duplicates.
+        ThresholdOrCountError: If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
+            not hold.
+        RecoveryDataError: If the recovery data is invalid or does not match
+            the provided parameters.
+        InvalidRecoveryAckError: If any recovery acknowledgment signature is
+            invalid. Note that this does NOT mean the DKG failed
+            (reaching this point implies the DKG itself was successful).
+            It only means it cannot be confirmed that all participants
+            have a copy of the recovery data.
+    """
+    params_validate(params)
+    (hostpubkeys, t) = params
+
+    if len(ack_sigs) != len(hostpubkeys):
+        raise ValueError
+
+    try:
+        (t_rec, _, hostpubkeys_rec, _, _, _) = deserialize_recovery_data(recovery_data)
+    except Exception as e:
+        raise RecoveryDataError("Failed to deserialize recovery data") from e
+
+    if t_rec != t or hostpubkeys_rec != hostpubkeys:
+        raise RecoveryDataError(
+            "Recovery data does not match the provided session parameters"
+        )
+
+    for i, sig in enumerate(ack_sigs):
+        if len(sig) != 64:
+            raise InvalidRecoveryAckError(i)
+        msg = recovery_ack_message(recovery_data, i)
+        valid = schnorr_verify(
+            msg,
+            hostpubkeys[i][1:33],
+            sig,
+        )
+        if not valid:
+            raise InvalidRecoveryAckError(i)
+
+
+class InvalidRecoveryAckError(FaultyParticipantError):
+    """Raised if a recovery acknowledgment signature is invalid.
+
+    Attributes:
+        participant (int): Index of the participant whose signature is invalid.
+    """
+
+    def __init__(self, participant: int, *args: Any):
+        self.participant = participant
+        super().__init__(participant, *args)

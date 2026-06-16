@@ -208,7 +208,9 @@ We make the following modifications as compared to the original SimplPedPop prop
  - Individual participants' public shares are added to the output of the DKG. This allows partial signature verification.
  - The participants send VSS commitments to an untrusted coordinator instead of directly to each other. This lets the coordinator aggregate VSS commitments, which reduces communication costs. Nevertheless, if a session fails, participants are able to investigate who provided invalid secret shares by asking the coordinator for the other participants' individual contributions to their public share.
  - To prevent a malicious participant from embedding a Taproot script path in the threshold public key, the participants tweak the VSS commitment such that the corresponding threshold public key has an unspendable script path.
- - ~The proofs of knowledge are not included in the data for the equality check. This will reduce the size of the backups in ChillDKG.~ (TODO: This will be fixed in an updated version of the paper.)
+ - The proofs of possession are omitted from the data for the equality check.[^pop-eq] This reduces the size of the backups in ChillDKG.
+
+[^pop-eq]: An inspection of the security proof [CRGS23] shows that this modification does affect security.
 
 Our variant of the SimplPedPop protocol then works as follows:
 
@@ -487,7 +489,7 @@ without careful further consideration, which is not in the scope of this documen
 
 ### Protocol Parties and Network Setup
 
-There are `n >= 2` *participants*, `t` of which will be required to produce a signature.
+There are `n >= 1` *participants*, `t` of which will be required to produce a signature.
 Each participant has a point-to-point communication link to the *coordinator*
 (but participants do not have direct communication links to each other).
 
@@ -581,6 +583,9 @@ e.g., stop sending additional funds to addresses derived from it.
 it will still be possible to spend the funds,
 and even recovered participants can participate in signing sessions.)
 
+To facilitate this confirmation process,
+ChillDKG provides optional functionality for creating and verifying acknowledgment signatures on the recovery data.
+
 ### Blaming Faulty Parties
 
 Any faulty party can make a ChillDKG session abort by sending a message that deviates from the protocol specification.
@@ -637,8 +642,6 @@ i.e., the coordinator sends the same message to each participant.[^no-reliable-b
 Unless participants abort due to errors, all participants run the same code and send messages in the same steps.
 
 [^no-reliable-broadcast]: Recall that we do not assume a *reliable* broadcast channel but instead that the coordinator has separate a point-to-point communication links to each participant. In other words, the protocol prescribes that an honest coordinator sends the same message to every participant, but the security of the protocol does not depend on the coordinator adhering to that prescribe.
-
-TODO Add on-wire messages sizes to the figure after defining message serialization format.
 
 ![The figure shows the message flow between a participant and a coordinator.
 The first of two phases named "Generation of host public keys" involves the participant invoking the hostpubkey_gen function with parameter hostseckey and sending the returned hostpubkey to the coordinator.
@@ -714,8 +717,7 @@ TODO Refer to the FROST signing BIP instead, once that one has a number.
 
 *Raises*:
 
-- `HostSeckeyError` - If the length of `hostseckey` is not 32 bytes or if the
-  key is invalid.
+- `HostSeckeyError` - If the host secret key is invalid.
 
 #### HostSeckeyError Exception
 
@@ -724,8 +726,6 @@ class HostSeckeyError(ValueError)
 ```
 
 Raised if the host secret key is invalid.
-
-This incluces the case that its length is not 32 bytes.
 
 #### SessionParams Tuples
 
@@ -895,14 +895,14 @@ Perform a participant's first step of a ChillDKG session.
 
 *Raises*:
 
-- `HostSeckeyError` - If the length of `hostseckey` is not 32 bytes, if the
-  key is invalid, or if the key does not match any entry of
-  `hostpubkeys`.
+- `HostSeckeyError` - If the host secret key is invalid, or if the key does not
+  match any entry of `hostpubkeys`.
 - `InvalidHostPubkeyError` - If `hostpubkeys` contains an invalid public key.
 - `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
 - `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
   not hold.
-- `RandomnessError` - If the length of `random` is not 32 bytes.
+- `RandomnessError` - If `random` is all zeroes (i.e., b"\x00" * 32). This check
+  guards against the case of a malfunctioning random number generator.
 
 #### RandomnessError Exception
 
@@ -910,7 +910,7 @@ Perform a participant's first step of a ChillDKG session.
 class RandomnessError(ValueError)
 ```
 
-Raised if the length of the provided randomness is not 32 bytes.
+Raised if the provided randomness is all zeroes (i.e., b"\x00" * 32).
 
 #### participant\_step2
 
@@ -954,8 +954,8 @@ data, from which this participant can recover the DKG output using the
 
 *Raises*:
 
-- `HostSeckeyError` - If the length of `hostseckey` is not 32 bytes.
-- `RandomnessError` - If the length of `aux_rand` is not 32 bytes.
+- `HostSeckeyError` - If the host secret key is invalid or if it does not match the one
+  used in `participant_step1`.
 - `FaultyCoordinatorError` - If the coordinator is faulty. See the
   documentation of the exception for further details.
 - `FaultyParticipantOrCoordinatorError` - If another known participant or the
@@ -984,10 +984,31 @@ the future (e.g., when initiating a signing session), be convinced to deem
 the session successful by presenting the recovery data to them, from which
 they can recover the DKG outputs using the `recover` function.
 
+Since returning successfully does not imply that other participants deem
+the DKG session successful, returning successfully also does not imply
+that redundant copies of the recovery data exist. For example, it could
+be the case that other participants raised an exception instead, and this
+participant will be the only one that obtained the recovery data. In that
+case, if this participant's storage fails, the only copy of the recovery
+data is lost. As a result, this participant will not be able to convince
+any other participants to deem the DKG session successful, and it will
+not be possible to create a signature.
+
+To protect against this scenario, callers should ensure that all
+participants deem the DKG session successful (which also implies that
+they have a redundant copy of the recovery data) before using the
+threshold public key (e.g., before sending funds to it). The recommended
+way of doing so is by collecting acknowledgment signatures via
+`participant_recovery_ack_sign`. Callers can alternatively employ some
+other means to ensure that they will always have access to the recovery
+data (which can be used to convince other participants that the DKG
+session was successful). For example, they could use a custom redundant
+way of backing up the recovery data.
+
 *Warning:*
 Changing perspectives, this implies that, even when obtaining an exception,
 this participant **must not** conclude that the DKG session has failed, and
-as a consequence, this particiant **must not** erase the hostseckey. The
+as a consequence, this participant **must not** erase the hostseckey. The
 underlying reason is that some other participant may deem the DKG session
 successful and use the resulting threshold public key (e.g., by sending
 funds to it). That other participant can, at any point in the future,
@@ -1075,7 +1096,7 @@ Perform the coordinator's first step of a ChillDKG session.
 - `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
 - `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
   not hold.
-- `FaultyParticipantError` - If another participant is faulty. See the
+- `FaultyParticipantError` - If a participant is faulty. See the
   documentation of the exception for further details.
 
 #### coordinator\_finalize
@@ -1121,7 +1142,7 @@ other participants via a communication channel beside the coordinator.
 
 *Raises*:
 
-- `FaultyParticipantError` - If another participant is faulty. See the
+- `FaultyParticipantError` - If a participant is faulty. See the
   documentation of the exception for further details.
 
 #### coordinator\_investigate
@@ -1153,7 +1174,7 @@ information.
 
 *Raises*:
 
-- `FaultyParticipantError` - If another participant is faulty. See the
+- `FaultyParticipantError` - If a participant is faulty. See the
   documentation of the exception for further details.
 
 #### recover
@@ -1187,8 +1208,8 @@ backup after data loss.
 
 *Raises*:
 
-- `HostSeckeyError` - If the length of `hostseckey` is not 32 bytes, if the
-  key is invalid, or if the key does not match the recovery data.
+- `HostSeckeyError` - If the host secret key is invalid, or if the key does not
+  match the recovery data.
   (This can also occur if the recovery data is invalid.)
 - `RecoveryDataError` - If recovery failed due to invalid recovery data.
 
@@ -1199,6 +1220,92 @@ class RecoveryDataError(ValueError)
 ```
 
 Raised if the recovery data is invalid.
+
+#### participant\_recovery\_ack\_sign
+
+```python
+def participant_recovery_ack_sign(hostseckey: bytes, recovery_data: RecoveryData, params: SessionParams, aux_rand: bytes) -> bytes
+```
+
+Sign recovery data to create a recovery acknowledgment.
+
+This function allows a participant to create an explicit acknowledgment
+signature on the recovery data. This can be used for an optional
+acknowledgment round where participants acknowledge that they have
+successfully received the complete recovery data.
+
+*Arguments*:
+
+- `hostseckey` - Participant's long-term host secret key (32 bytes).
+- `recovery_data` - Recovery data from a successful session.
+- `params` - Common session parameters.
+- `aux_rand` - Auxiliary randomness (32 bytes). FRESH 32-byte randomness
+  is optimal, but 16 random bytes or a counter padded to 32 bytes
+  is acceptable (see BIP 340).
+
+
+*Returns*:
+
+- `bytes` - Acknowledgment signature (64 bytes).
+
+
+*Raises*:
+
+- `HostSeckeyError` - If the length of `hostseckey` is not 32 bytes, if the
+  key is invalid, or if the key does not match any host public key.
+- `InvalidHostPubkeyError` - If `hostpubkeys` contains an invalid public key.
+- `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
+- `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
+  not hold.
+- `RandomnessError` - If the length of `aux_rand` is not 32 bytes.
+- `RecoveryDataError` - If the recovery data is invalid or does not match
+  the provided parameters.
+
+#### participant\_recovery\_acks\_verify
+
+```python
+def participant_recovery_acks_verify(recovery_data: RecoveryData, params: SessionParams, ack_sigs: List[bytes]) -> None
+```
+
+Verify recovery acknowledgment signatures from all participants.
+
+This function is used to ensure that all participants have
+received the recovery data before the threshold public key is used
+(e.g., before funds are sent to it).
+
+*Arguments*:
+
+- `recovery_data` - Recovery data from a successful session.
+- `params` - Common session parameters.
+- `ack_sigs` - List of acknowledgment signatures (64 bytes each)
+  from all participants, in the same order as `hostpubkeys`.
+
+
+*Raises*:
+
+- `InvalidHostPubkeyError` - If `hostpubkeys` contains an invalid public key.
+- `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
+- `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 2**32 - 1` does
+  not hold.
+- `RecoveryDataError` - If the recovery data is invalid or does not match
+  the provided parameters.
+- `InvalidRecoveryAckError` - If any recovery acknowledgment signature is
+  invalid. Note that this does NOT mean the DKG failed
+  (reaching this point implies the DKG itself was successful).
+  It only means it cannot be confirmed that all participants
+  have a copy of the recovery data.
+
+#### InvalidRecoveryAckError Exception
+
+```python
+class InvalidRecoveryAckError(FaultyParticipantError)
+```
+
+Raised if a recovery acknowledgment signature is invalid.
+
+*Attributes*:
+
+- `participant` _int_ - Index of the participant whose signature is invalid.
 
 #### ProtocolError Exception
 

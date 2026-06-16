@@ -6,6 +6,8 @@ from itertools import combinations
 from random import randint
 from typing import Tuple, List, Optional
 from secrets import token_bytes as random_bytes
+from pathlib import Path
+import json
 
 from chilldkg_ref.util import (
     FaultyParticipantOrCoordinatorError,
@@ -23,6 +25,12 @@ import chilldkg_ref.chilldkg as chilldkg
 from secp256k1lab.secp256k1 import GE, G, Scalar
 from secp256k1lab.keys import pubkey_gen_plain
 
+from gen_vector_utils.util import (
+    assert_raises,
+    params_from_dict,
+    params_asdict,
+    dkg_output_asdict,
+)
 from example import simulate_chilldkg_full as simulate_chilldkg_full_example
 
 
@@ -378,9 +386,464 @@ def test_correctness(t, n, simulate_dkg, recovery=False, investigation=False):
             assert pubshares == dkg_outputs[i][2]
 
 
+VECTORS_DIR = Path(__file__).parent / "vectors"
+
+
+def test_hostpubkey_gen_vectors():
+    input_file = VECTORS_DIR / "hostpubkey_gen_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    valid_test_cases = test_data["validTestCases"]
+    error_test_cases = test_data["errorTestCases"]
+    assert test_data["totalTests"] == len(valid_test_cases) + len(error_test_cases)
+
+    for test_case in valid_test_cases:
+        hostseckey = bytes.fromhex(test_case["hostseckey"])
+        expected_hostpubkey = bytes.fromhex(test_case["expectedHostpubkey"])
+        assert expected_hostpubkey == chilldkg.hostpubkey_gen(hostseckey)
+
+    for test_case in error_test_cases:
+        hostseckey = bytes.fromhex(test_case["hostseckey"])
+        expected_error = test_case["expectedError"]
+        assert_raises(lambda: chilldkg.hostpubkey_gen(hostseckey), expected_error)
+
+
+def test_params_id_vectors():
+    input_file = VECTORS_DIR / "params_id_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    valid_test_cases = test_data["validTestCases"]
+    error_test_cases = test_data["errorTestCases"]
+    assert test_data["totalTests"] == len(valid_test_cases) + len(error_test_cases)
+
+    for test_case in valid_test_cases:
+        params = params_from_dict(test_case["params"])
+        expected_id = bytes.fromhex(test_case["expectedParamsId"])
+        assert expected_id == chilldkg.params_id(params)
+
+    for test_case in error_test_cases:
+        params = params_from_dict(test_case["params"])
+        expected_error = test_case["expectedError"]
+        assert_raises(lambda: chilldkg.params_id(params), expected_error)
+
+
+def test_participant_step1_vectors():
+    input_file = VECTORS_DIR / "participant_step1_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+    for group in test_data["testGroups"]:
+        for test_case in group["validTestCases"]:
+            hostseckey = bytes.fromhex(test_case["hostseckey"])
+            params = params_from_dict(test_case["params"])
+            random = bytes.fromhex(test_case["random"])
+            expected_pmsg1 = bytes.fromhex(test_case["expectedPmsg1"])
+            _, pmsg1 = chilldkg.participant_step1(hostseckey, params, random)
+            assert expected_pmsg1 == pmsg1
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+        for test_case in group["errorTestCases"]:
+            hostseckey = bytes.fromhex(test_case["hostseckey"])
+            params = params_from_dict(test_case["params"])
+            random = bytes.fromhex(test_case["random"])
+            expected_error = test_case["expectedError"]
+            assert_raises(
+                lambda: chilldkg.participant_step1(hostseckey, params, random),
+                expected_error,
+            )
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_participant_step2_vectors():
+    input_file = VECTORS_DIR / "participant_step2_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+    for group in test_data["testGroups"]:
+        # common fields for all test cases
+        params = params_from_dict(group["params"])
+        hostseckey = bytes.fromhex(group["hostseckey"])
+        random = bytes.fromhex(group["random"])
+        aux_rand = bytes.fromhex(group["auxRand"])
+
+        state1, pmsg1 = chilldkg.participant_step1(hostseckey, params, random)
+        assert bytes.fromhex(group["pmsg1"]) == pmsg1  # checkpoint
+
+        for test_case in group["validTestCases"]:
+            cmsg1 = bytes.fromhex(test_case["cmsg1"])
+            expected_pmsg2 = bytes.fromhex(test_case["expectedPmsg2"])
+            _, pmsg2 = chilldkg.participant_step2(hostseckey, state1, cmsg1, aux_rand)
+            assert expected_pmsg2 == pmsg2
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+        for test_case in group["errorTestCases"]:
+            case_hostseckey = bytes.fromhex(
+                test_case.get("hostseckey", group["hostseckey"])
+            )
+            case_aux_rand = bytes.fromhex(test_case.get("auxRand", group["auxRand"]))
+            cmsg1 = bytes.fromhex(test_case["cmsg1"])
+            expected_error = test_case["expectedError"]
+            assert_raises(
+                lambda: chilldkg.participant_step2(
+                    case_hostseckey, state1, cmsg1, case_aux_rand
+                ),
+                expected_error,
+            )
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_participant_finalize_vectors():
+    input_file = VECTORS_DIR / "participant_finalize_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+    for group in test_data["testGroups"]:
+        # common fields for all test cases
+        params = params_from_dict(group["params"])
+        hostseckey = bytes.fromhex(group["hostseckey"])
+        random = bytes.fromhex(group["random"])
+        aux_rand = bytes.fromhex(group["auxRand"])
+
+        # compute state1 and assert pmsg1
+        state1, pmsg1 = chilldkg.participant_step1(hostseckey, params, random)
+        assert bytes.fromhex(group["pmsg1"]) == pmsg1
+        # compute state2 and assert pmsg2
+        cmsg1 = bytes.fromhex(group["cmsg1"])
+        state2, pmsg2 = chilldkg.participant_step2(hostseckey, state1, cmsg1, aux_rand)
+        assert bytes.fromhex(group["pmsg2"]) == pmsg2
+
+        for test_case in group["validTestCases"]:
+            cmsg2 = bytes.fromhex(test_case["cmsg2"])
+            pout, prec = chilldkg.participant_finalize(state2, cmsg2)
+            expected_pout = test_case["expectedOutput"]["dkgOutput"]
+            expected_prec = bytes.fromhex(test_case["expectedOutput"]["recoveryData"])
+            assert expected_pout == dkg_output_asdict(pout)
+            assert expected_prec == prec
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+        for test_case in group["errorTestCases"]:
+            cmsg2 = bytes.fromhex(test_case["cmsg2"])
+            expected_error = test_case["expectedError"]
+            assert_raises(
+                lambda: chilldkg.participant_finalize(state2, cmsg2), expected_error
+            )
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_participant_investigate_vectors():
+    input_file = VECTORS_DIR / "participant_investigate_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+    for group in test_data["testGroups"]:
+        # common fields for all test cases
+        params = params_from_dict(group["params"])
+        hostseckey = bytes.fromhex(group["hostseckey"])
+        random = bytes.fromhex(group["random"])
+        aux_rand = bytes.fromhex(group["auxRand"])
+        cmsg1_pool = group["cmsg1Pool"]
+
+        # Re-derive state1
+        state1, pmsg1 = chilldkg.participant_step1(hostseckey, params, random)
+        assert bytes.fromhex(group["pmsg1"]) == pmsg1
+
+        for test_case in group["errorTestCases"]:
+            cmsg1 = bytes.fromhex(cmsg1_pool[test_case["cmsg1Index"]])
+            cinv_msg = bytes.fromhex(test_case["cinvMsg"])
+            expected_error = test_case["expectedError"]
+            try:
+                chilldkg.participant_step2(hostseckey, state1, cmsg1, aux_rand)
+            except UnknownFaultyParticipantOrCoordinatorError as e:
+                assert_raises(
+                    lambda e=e: chilldkg.participant_investigate(e, cinv_msg),
+                    expected_error,
+                )
+            except Exception as e:
+                raise AssertionError(f"Wrong exception raised: {type(e).__name__}")
+            else:
+                raise AssertionError("Expected exception")
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_coordinator_step1_vectors():
+    input_file = VECTORS_DIR / "coordinator_step1_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+    for group in test_data["testGroups"]:
+        pmsg1_pool = group["pmsg1Pool"]
+
+        for test_case in group["validTestCases"]:
+            pmsgs1 = [bytes.fromhex(pmsg1_pool[i]) for i in test_case["pmsg1Indices"]]
+            params = params_from_dict(test_case["params"])
+            expected_cmsg1 = test_case["expectedCmsg1"]
+            _, cmsg1 = chilldkg.coordinator_step1(pmsgs1, params)
+            assert bytes.fromhex(expected_cmsg1) == cmsg1
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+        for test_case in group["errorTestCases"]:
+            pmsgs1 = [bytes.fromhex(pmsg1_pool[i]) for i in test_case["pmsg1Indices"]]
+            params = params_from_dict(test_case["params"])
+            expected_error = test_case["expectedError"]
+            assert_raises(
+                lambda: chilldkg.coordinator_step1(pmsgs1, params), expected_error
+            )
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_coordinator_finalize_vectors():
+    input_file = VECTORS_DIR / "coordinator_finalize_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+
+    for group in test_data["testGroups"]:
+        params = params_from_dict(group["params"])
+        pmsgs1 = [bytes.fromhex(m) for m in group["pmsgs1"]]
+        pmsg2_pool = group["pmsg2Pool"]
+
+        state, cmsg1 = chilldkg.coordinator_step1(pmsgs1, params)
+        assert bytes.fromhex(group["cmsg1"]) == cmsg1
+
+        for test_case in group["validTestCases"]:
+            pmsgs2 = [bytes.fromhex(pmsg2_pool[i]) for i in test_case["pmsg2Indices"]]
+            cmsg2, cout, crec = chilldkg.coordinator_finalize(state, pmsgs2)
+            expected_cmsg2 = test_case["expectedOutput"]["cmsg2"]
+            expected_cout = test_case["expectedOutput"]["dkgOutput"]
+            expected_crec = test_case["expectedOutput"]["recoveryData"]
+            assert bytes.fromhex(expected_cmsg2) == cmsg2
+            assert expected_cout == dkg_output_asdict(cout)
+            assert bytes.fromhex(expected_crec) == crec
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+        for test_case in group["errorTestCases"]:
+            pmsgs2 = [bytes.fromhex(pmsg2_pool[i]) for i in test_case["pmsg2Indices"]]
+            expected_error = test_case["expectedError"]
+            assert_raises(
+                lambda: chilldkg.coordinator_finalize(state, pmsgs2), expected_error
+            )
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_coordinator_investigate_vectors():
+    input_file = VECTORS_DIR / "coordinator_investigate_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    total_cases = 0
+
+    for group in test_data["testGroups"]:
+        params = params_from_dict(group["params"])
+        pmsgs1 = [bytes.fromhex(m) for m in group["pmsgs1"]]
+
+        for test_case in group["validTestCases"]:
+            cinv_msgs = chilldkg.coordinator_investigate(pmsgs1, params)
+            expected_cinv_msgs = test_case["expectedCinvMsgs"]
+            assert [bytes.fromhex(m) for m in expected_cinv_msgs] == cinv_msgs
+            total_cases += 1
+            assert test_case["tcId"] == total_cases
+
+    assert test_data["totalTests"] == total_cases
+
+
+def test_recover_vectors():
+    input_file = VECTORS_DIR / "recover_vectors.json"
+    with open(input_file) as f:
+        test_data = json.load(f)
+
+    valid_test_cases = test_data["validTestCases"]
+    error_test_cases = test_data["errorTestCases"]
+    assert test_data["totalTests"] == len(valid_test_cases) + len(error_test_cases)
+
+    for test_case in valid_test_cases:
+        hostseckey = (
+            bytes.fromhex(test_case["hostseckey"]) if test_case["hostseckey"] else None
+        )
+        recovery_data = bytes.fromhex(test_case["recoveryData"])
+        out, params = chilldkg.recover(hostseckey, recovery_data)
+        expected_out = test_case["expectedOutput"]["dkgOutput"]
+        expected_params = test_case["expectedOutput"]["params"]
+        assert expected_out == dkg_output_asdict(out)
+        assert expected_params == params_asdict(params)
+
+    for test_case in error_test_cases:
+        hostseckey = (
+            bytes.fromhex(test_case["hostseckey"]) if test_case["hostseckey"] else None
+        )
+        recovery_data = bytes.fromhex(test_case["recoveryData"])
+        expected_error = test_case["expectedError"]
+        assert_raises(
+            lambda: chilldkg.recover(hostseckey, recovery_data), expected_error
+        )
+
+
+def test_recovery_acknowledgment():
+    t, n = 2, 3
+    hostseckeys = [random_bytes(32) for _ in range(n)]
+    hostpubkeys = [chilldkg.hostpubkey_gen(hostseckey) for hostseckey in hostseckeys]
+    params = chilldkg.SessionParams(hostpubkeys, t)
+
+    results = simulate_chilldkg(hostseckeys, t, investigation=False)
+    recovery_data = results[1][1]  # First participant's recovery data
+    dkg_outputs = [result[0] for result in results[1:]]  # All participants' DKG outputs
+
+    ack_sigs = []
+    for i in range(n):
+        ack_sig = chilldkg.participant_recovery_ack_sign(
+            hostseckeys[i], recovery_data, params, random_bytes(32)
+        )
+        assert len(ack_sig) == 64
+        ack_sigs.append(ack_sig)
+
+    chilldkg.participant_recovery_acks_verify(recovery_data, params, ack_sigs)
+
+    # Wrong hostseckey length
+    try:
+        chilldkg.participant_recovery_ack_sign(random_bytes(16), recovery_data, params, random_bytes(32))
+    except ValueError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Invalid hostpubkey in params
+    invalid_hostpubkey = b"\x03" + 31 * b"\x00" + b"\x05"
+    invalid_params = chilldkg.SessionParams([hostpubkeys[0], invalid_hostpubkey], t)
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], recovery_data, invalid_params, random_bytes(32))
+    except chilldkg.InvalidHostPubkeyError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    try:
+        chilldkg.participant_recovery_acks_verify(recovery_data, invalid_params, ack_sigs)
+    except chilldkg.InvalidHostPubkeyError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Duplicate hostpubkey in params
+    invalid_params = chilldkg.SessionParams([hostpubkeys[0], hostpubkeys[0]], t)
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], recovery_data, invalid_params, random_bytes(32))
+    except chilldkg.DuplicateHostPubkeyError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Invalid threshold in params
+    invalid_params = chilldkg.SessionParams(hostpubkeys, n + 1)
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], recovery_data, invalid_params, random_bytes(32))
+    except chilldkg.ThresholdOrCountError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Wrong hostseckey
+    try:
+        chilldkg.participant_recovery_ack_sign(random_bytes(32), recovery_data, params, random_bytes(32))
+    except chilldkg.HostSeckeyError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Invalid randomness length
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], recovery_data, params, random_bytes(16))
+    except chilldkg.RandomnessError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Mismatched params
+    invalid_params = chilldkg.SessionParams(hostpubkeys, t + 1)
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], recovery_data, invalid_params, random_bytes(32))
+    except chilldkg.RecoveryDataError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    try:
+        chilldkg.participant_recovery_acks_verify(recovery_data, invalid_params, ack_sigs)
+    except chilldkg.RecoveryDataError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Corrupted recovery data
+    corrupted_recovery_data = random_bytes(len(recovery_data))
+    try:
+        chilldkg.participant_recovery_ack_sign(hostseckeys[0], corrupted_recovery_data, params, random_bytes(32))
+    except chilldkg.RecoveryDataError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    try:
+        chilldkg.participant_recovery_acks_verify(corrupted_recovery_data, params, ack_sigs)
+    except chilldkg.RecoveryDataError:
+        pass
+    else:
+        assert False, "Expected exception"
+
+    # Invalid signature
+    invalid_ack_sigs = ack_sigs[:]
+    invalid_ack_sigs[1] = random_bytes(64)
+    try:
+        chilldkg.participant_recovery_acks_verify(recovery_data, params, invalid_ack_sigs)
+    except chilldkg.InvalidRecoveryAckError as e:
+        assert e.participant == 1
+    else:
+        assert False, "Expected exception"
+
+    # Wrong signature length
+    wrong_length_sigs = ack_sigs[:]
+    wrong_length_sigs[0] = random_bytes(32)
+    try:
+        chilldkg.participant_recovery_acks_verify(recovery_data, params, wrong_length_sigs)
+    except chilldkg.InvalidRecoveryAckError as e:
+        assert e.participant == 0
+    else:
+        assert False, "Expected exception"
+
+
 test_chilldkg_params_validate()
 test_vss_correctness()
 test_recover_secret()
+test_recovery_acknowledgment()
 for t, n in [(1, 1), (1, 2), (2, 2), (2, 3), (2, 5)]:
     test_correctness(t, n, simulate_simplpedpop)
     test_correctness(t, n, simulate_simplpedpop, investigation=True)
@@ -389,3 +852,13 @@ for t, n in [(1, 1), (1, 2), (2, 2), (2, 3), (2, 5)]:
     test_correctness(t, n, simulate_chilldkg, recovery=True)
     test_correctness(t, n, simulate_chilldkg, recovery=True, investigation=True)
     test_correctness(t, n, simulate_chilldkg_full, recovery=True)
+test_hostpubkey_gen_vectors()
+test_params_id_vectors()
+test_participant_step1_vectors()
+test_participant_step2_vectors()
+test_participant_finalize_vectors()
+test_participant_investigate_vectors()
+test_coordinator_step1_vectors()
+test_coordinator_finalize_vectors()
+test_coordinator_investigate_vectors()
+test_recover_vectors()
