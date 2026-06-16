@@ -16,7 +16,7 @@ cd "$(dirname "$0")"
 
 # Keep going if a linter fails
 ruff check --quiet || true
-ruff format --diff --quiet
+ruff format --diff --quiet || true
 mypy --no-error-summary . || true
 # Be more strict in the reference code
 mypy --no-error-summary --strict --untyped-calls-exclude=secp256k1lab -p chilldkg_ref --follow-imports=silent || true
