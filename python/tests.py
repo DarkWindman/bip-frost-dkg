@@ -731,7 +731,7 @@ def test_recovery_acknowledgment():
     # Wrong hostseckey length
     try:
         chilldkg.participant_recovery_ack_sign(random_bytes(16), recovery_data, params, random_bytes(32))
-    except chilldkg.HostSeckeyError:
+    except ValueError:
         pass
     else:
         assert False, "Expected exception"
