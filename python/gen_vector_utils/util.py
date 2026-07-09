@@ -75,6 +75,21 @@ def dkg_output_asdict(dkg_output: DKGOutput) -> dict:
     }
 
 
+def assign_tc_ids(groups):
+    """Assign globally sequential tcIds (starting from 1) to all test cases.
+
+    ...
+    """
+    tc_id = 1
+    for group in groups:
+        for key, value in group.items():
+            if isinstance(value, list) and value and isinstance(value[0], dict):
+                for i, case in enumerate(value):
+                    group[key][i] = {"tcId": tc_id, **case}
+                    tc_id += 1
+    return tc_id - 1
+
+
 # functions below are used to test JSON vectors with chilldkg_ref
 # in tests.py
 

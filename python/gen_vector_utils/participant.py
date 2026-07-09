@@ -8,6 +8,7 @@ from .util import (
     expect_exception,
     params_asdict,
     dkg_output_asdict,
+    assign_tc_ids,
 )
 
 from chilldkg_ref.chilldkg import (
@@ -38,22 +39,19 @@ PARTICIPANT_STEP1_DESCRIPTION = [
 ]
 
 
-def generate_participant_step1_group(t, n, tc_id_init=0):
+def generate_participant_step1_group(t, n):
     valid_cases = []
     error_cases = []
-    tc_id = tc_id_init
 
     hostseckeys = hex_list_to_bytes(HOSTSECKEYS_HEX[:n])
     hostpubkeys = [chilldkg.hostpubkey_gen(sk) for sk in hostseckeys]
     random = bytes.fromhex(RANDOMS_HEX[0])
 
     # --- Valid test case ---
-    tc_id += 1
     params = chilldkg.SessionParams(hostpubkeys, t)
     _, expected_pmsg1 = chilldkg.participant_step1(hostseckeys[0], params, random)
     valid_cases.append(
         {
-            "tcId": tc_id,
             "hostseckey": bytes_to_hex(hostseckeys[0]),
             "params": params_asdict(params),
             "random": bytes_to_hex(random),
@@ -63,7 +61,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     )
 
     # --- Error test case: Wrong hostseckey length ---
-    tc_id += 1
     short_hostseckey = bytes.fromhex("631C047D50A67E45E27ED1FF25FCE179")
     assert len(short_hostseckey) == 16
     error = expect_exception(
@@ -72,7 +69,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     )
     error_cases.append(
         {
-            "tcId": tc_id,
             "hostseckey": bytes_to_hex(short_hostseckey),
             "params": params_asdict(params),
             "random": bytes_to_hex(random),
@@ -81,7 +77,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
         }
     )
     # --- Error test case: zero hostseckey ---
-    tc_id += 1
     zero_hostseckey = b"\x00" * 32
     error = expect_exception(
         lambda: participant_step1(zero_hostseckey, params, random),
@@ -89,7 +84,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     )
     error_cases.append(
         {
-            "tcId": tc_id,
             "hostseckey": bytes_to_hex(zero_hostseckey),
             "params": params_asdict(params),
             "random": bytes_to_hex(random),
@@ -98,7 +92,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
         }
     )
     # --- Error test case: Out-of-range hostseckey ---
-    tc_id += 1
     invalid_hostseckey = bytes_from_int(Scalar.SIZE)
     error = expect_exception(
         lambda: participant_step1(invalid_hostseckey, params, random),
@@ -106,7 +99,6 @@ def generate_participant_step1_group(t, n, tc_id_init=0):
     )
     error_cases.append(
         {
-            "tcId": tc_id,
             "hostseckey": bytes_to_hex(invalid_hostseckey),
             "params": params_asdict(params),
             "random": bytes_to_hex(random),

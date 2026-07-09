@@ -4,6 +4,7 @@ from .util import (
     expect_exception,
     params_asdict,
     dkg_output_asdict,
+    assign_tc_ids,
 )
 
 from chilldkg_ref.chilldkg import hostpubkey_gen, params_id, recover

@@ -5,6 +5,7 @@ from .util import (
     expect_exception,
     params_asdict,
     dkg_output_asdict,
+    assign_tc_ids,
 )
 
 from chilldkg_ref.chilldkg import (
@@ -37,7 +38,7 @@ COORDINATOR_STEP1_DESCRIPTION = [
 ]
 
 
-def generate_coordinator_step1_group(t, n, tc_id_init=0):
+def generate_coordinator_step1_group(t, n):
     hostseckeys = hex_list_to_bytes(HOSTSECKEYS_HEX[:n])
     hostpubkeys = [chilldkg.hostpubkey_gen(sk) for sk in hostseckeys]
     params = chilldkg.SessionParams(hostpubkeys, t)
@@ -51,7 +52,6 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
     _, expected_cmsg1 = coordinator_step1(pmsgs1, params)
 
     pmsg1_pool = []
-    tc_id = tc_id_init
 
     # valid pmsgs1 at indices [0, 1, ..., n - 1]
     for m in pmsgs1:
@@ -61,10 +61,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
     error_cases = []
 
     # --- Valid test case ---
-    tc_id += 1
     valid_cases.append(
         {
-            "tcId": tc_id,
             "pmsg1Indices": list(range(len(pmsgs1))),  # [0, 1, ..., n - 1]
             "params": params_asdict(params),
             "expectedCmsg1": bytes_to_hex(expected_cmsg1),
@@ -78,10 +76,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
         lambda: coordinator_step1(pmsgs1, invalid_params),
         chilldkg.ThresholdOrCountError,
     )
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg1Indices": list(range(len(pmsgs1))),  # same valid pmsgs1
             "params": params_asdict(invalid_params),  # t=0
             "expectedError": error,
@@ -97,10 +93,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
         lambda: coordinator_step1(pmsgs1, invalid_params),
         chilldkg.InvalidHostPubkeyError,
     )
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg1Indices": list(range(len(pmsgs1))),
             "params": params_asdict(invalid_params),
             "expectedError": error,
@@ -115,10 +109,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
         lambda: coordinator_step1(pmsgs1, duplicate_params),
         chilldkg.DuplicateHostPubkeyError,
     )
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg1Indices": list(range(len(pmsgs1))),
             "params": params_asdict(duplicate_params),
             "expectedError": error,
@@ -139,10 +131,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
         chilldkg.FaultyParticipantError,
     )
     pmsg1_pool.append(bytes_to_hex(invalid_pmsgs1[1]))  # index n
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg1Indices": [
                 len(pmsg1_pool) - 1 if i == 1 else i for i in range(n)
             ],  # [0, n, 2,..., n - 1] — index 1 replaced
@@ -153,7 +143,6 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
     )
 
     return {
-        "totalTests": tc_id - tc_id_init,
         "pmsg1Pool": pmsg1_pool,
         "validTestCases": valid_cases,
         "errorTestCases": error_cases,
@@ -161,12 +150,8 @@ def generate_coordinator_step1_group(t, n, tc_id_init=0):
 
 
 def generate_coordinator_step1_vectors():
-    groups = []
-    total_tests = 0
-    for t, n in THRESHOLD_CONFIGS:
-        group = generate_coordinator_step1_group(t, n, tc_id_init=total_tests)
-        total_tests += len(group["validTestCases"]) + len(group["errorTestCases"])
-        groups.append(group)
+    groups = [generate_coordinator_step1_group(t, n) for t, n in THRESHOLD_CONFIGS]
+    total_tests = assign_tc_ids(groups)
     return {
         "description": COORDINATOR_STEP1_DESCRIPTION,
         "totalTests": total_tests,
@@ -195,7 +180,7 @@ COORDINATOR_FINALIZE_DESCRIPTION = [
 ]
 
 
-def generate_coordinator_finalize_group(t, n, tc_id_init=0):
+def generate_coordinator_finalize_group(t, n):
     hostseckeys = hex_list_to_bytes(HOSTSECKEYS_HEX[:n])
     hostpubkeys = [chilldkg.hostpubkey_gen(sk) for sk in hostseckeys]
     params = chilldkg.SessionParams(hostpubkeys, t)
@@ -218,15 +203,12 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
     cmsg2, cout, crec = coordinator_finalize(cstate, pmsgs2)
     pmsg2_pool = [bytes_to_hex(m) for m in pmsgs2]
 
-    tc_id = tc_id_init
     valid_cases = []
     error_cases = []
 
     # --- Valid test case ---
-    tc_id += 1
     valid_cases.append(
         {
-            "tcId": tc_id,
             "pmsg2Indices": list(range(len(pmsgs2))),  # [0, 1, ..., n - 1]
             "expectedOutput": {
                 "cmsg2": bytes_to_hex(cmsg2),
@@ -243,10 +225,8 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
     error_case = expect_exception(
         lambda: coordinator_finalize(cstate, invalid_pmsgs2_short), ValueError
     )
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg2Indices": list(range(len(pmsgs2) - 1)),  # [0, ..., n - 2]
             "expectedError": error_case,
             "comment": "invalid pmsgs2: fewer entries than participants",
@@ -258,10 +238,8 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
     error_case = expect_exception(
         lambda: coordinator_finalize(cstate, invalid_pmsgs2_long), ValueError
     )
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg2Indices": list(range(len(pmsgs2))) + [0],  # [0, 1, ..., n-1, 0]
             "expectedError": error_case,
             "comment": "invalid pmsgs2: more entries than participants",
@@ -280,10 +258,8 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
 
     # add adversarial entry to pool
     pmsg2_pool.append(bytes_to_hex(invalid_pmsgs2_sig[1]))  # index n
-    tc_id += 1
     error_cases.append(
         {
-            "tcId": tc_id,
             "pmsg2Indices": [
                 len(pmsg2_pool) - 1 if i == 1 else i for i in range(n)
             ],  # [0, n, 2,..., n - 1]
@@ -293,7 +269,6 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
     )
 
     return {
-        "totalTests": tc_id - tc_id_init,
         "params": params_asdict(params),
         "pmsgs1": [bytes_to_hex(m) for m in pmsgs1],
         "cmsg1": bytes_to_hex(cmsg1),
@@ -304,12 +279,8 @@ def generate_coordinator_finalize_group(t, n, tc_id_init=0):
 
 
 def generate_coordinator_finalize_vectors():
-    groups = []
-    total_tests = 0
-    for t, n in THRESHOLD_CONFIGS:
-        group = generate_coordinator_finalize_group(t, n, tc_id_init=total_tests)
-        total_tests += len(group["validTestCases"]) + len(group["errorTestCases"])
-        groups.append(group)
+    groups = [generate_coordinator_finalize_group(t, n) for t, n in THRESHOLD_CONFIGS]
+    total_tests = assign_tc_ids(groups)
     return {
         "description": COORDINATOR_FINALIZE_DESCRIPTION,
         "totalTests": total_tests,
@@ -328,7 +299,7 @@ COORDINATOR_INVESTIGATE_DESCRIPTION = [
 ]
 
 
-def generate_coordinator_investigate_group(t, n, tc_id_init=0):
+def generate_coordinator_investigate_group(t, n):
     hostseckeys = hex_list_to_bytes(HOSTSECKEYS_HEX[:n])
     hostpubkeys = [chilldkg.hostpubkey_gen(sk) for sk in hostseckeys]
     params = chilldkg.SessionParams(hostpubkeys, t)
@@ -341,20 +312,15 @@ def generate_coordinator_investigate_group(t, n, tc_id_init=0):
         pmsgs1.append(msg)
     cinv_msgs = coordinator_investigate(pmsgs1, params)
 
-    tc_id = tc_id_init
-
     # --- Valid test case ---
-    tc_id += 1
     valid_cases = [
         {
-            "tcId": tc_id,
             "expectedCinvMsgs": [bytes_to_hex(m) for m in cinv_msgs],
             "comment": "valid coordinator investigate",
         }
     ]
 
     return {
-        "totalTests": tc_id - tc_id_init,
         "params": params_asdict(params),
         "pmsgs1": [bytes_to_hex(m) for m in pmsgs1],
         "validTestCases": valid_cases,
@@ -363,12 +329,8 @@ def generate_coordinator_investigate_group(t, n, tc_id_init=0):
 
 
 def generate_coordinator_investigate_vectors():
-    groups = []
-    total_tests = 0
-    for t, n in THRESHOLD_CONFIGS:
-        group = generate_coordinator_investigate_group(t, n, tc_id_init=total_tests)
-        total_tests += len(group["validTestCases"])
-        groups.append(group)
+    groups = [generate_coordinator_investigate_group(t, n) for t, n in THRESHOLD_CONFIGS]
+    total_tests = assign_tc_ids(groups)
     return {
         "description": COORDINATOR_INVESTIGATE_DESCRIPTION,
         "totalTests": total_tests,
