@@ -1,4 +1,6 @@
 import copy
+from secp256k1lab.secp256k1 import Scalar
+from secp256k1lab.util import bytes_from_int
 
 from chilldkg_ref import chilldkg
 
@@ -195,6 +197,90 @@ def generate_coordinator_step1_group(t, n):
             "params": params_asdict(params),
             "expectedError": error,
             "comment": "participant (id 1) message has an enc_shares list of invalid length",
+        }
+    )
+
+    # --- Error test case: participant (index 1) message has an out-of-range enc_share ---
+    overflow = bytes_from_int(Scalar.SIZE)  # 32 bytes
+    valid_pmsg1 = pmsgs1[1]
+    invalid_pmsg1 = valid_pmsg1[: -32 * n] + overflow + valid_pmsg1[-32 * (n - 1) :]
+    invalid_pmsgs1 = list(pmsgs1)
+    invalid_pmsgs1[1] = invalid_pmsg1
+    error = expect_faulty_exception(
+        lambda: chilldkg.coordinator_step1(invalid_pmsgs1, params),
+        chilldkg.FaultyParticipantError,
+        1,
+    )
+    pmsg1_pool.append(bytes_to_hex(invalid_pmsg1))
+    error_cases.append(
+        {
+            "pmsg1Indices": [len(pmsg1_pool) - 1 if i == 1 else i for i in range(n)],
+            "params": params_asdict(params),
+            "expectedError": error,
+            "comment": "participant (index 1) message has an out-of-range enc_share",
+        }
+    )
+
+    # --- Error test case: participant (index 1) message has an off-curve x-coordinate in the VSS commitment ---
+    off_curve = b"\x02" + (5).to_bytes(32, "big")
+    valid_pmsg1 = pmsgs1[1]
+    invalid_pmsg1 = off_curve + valid_pmsg1[33:]
+    invalid_pmsgs1 = list(pmsgs1)
+    invalid_pmsgs1[1] = invalid_pmsg1
+    error = expect_faulty_exception(
+        lambda: chilldkg.coordinator_step1(invalid_pmsgs1, params),
+        chilldkg.FaultyParticipantError,
+        1,
+    )
+    pmsg1_pool.append(bytes_to_hex(invalid_pmsg1))
+    error_cases.append(
+        {
+            "pmsg1Indices": [len(pmsg1_pool) - 1 if i == 1 else i for i in range(n)],
+            "params": params_asdict(params),
+            "expectedError": error,
+            "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment",
+        }
+    )
+
+    # --- Error test case: participant (index 1) message has an out-of-range enc_share ---
+    overflow = bytes_from_int(Scalar.SIZE)  # 32 bytes
+    valid_pmsg1 = pmsgs1[1]
+    invalid_pmsg1 = valid_pmsg1[: -32 * n] + overflow + valid_pmsg1[-32 * (n - 1) :]
+    invalid_pmsgs1 = list(pmsgs1)
+    invalid_pmsgs1[1] = invalid_pmsg1
+    error = expect_faulty_exception(
+        lambda: chilldkg.coordinator_step1(invalid_pmsgs1, params),
+        chilldkg.FaultyParticipantError,
+        1,
+    )
+    pmsg1_pool.append(bytes_to_hex(invalid_pmsg1))
+    error_cases.append(
+        {
+            "pmsg1Indices": [len(pmsg1_pool) - 1 if i == 1 else i for i in range(n)],
+            "params": params_asdict(params),
+            "expectedError": error,
+            "comment": "participant (index 1) message has an out-of-range enc_share",
+        }
+    )
+
+    # --- Error test case: participant (index 1) message has an off-curve x-coordinate in the VSS commitment ---
+    off_curve = b"\x02" + (5).to_bytes(32, "big")
+    valid_pmsg1 = pmsgs1[1]
+    invalid_pmsg1 = off_curve + valid_pmsg1[33:]
+    invalid_pmsgs1 = list(pmsgs1)
+    invalid_pmsgs1[1] = invalid_pmsg1
+    error = expect_faulty_exception(
+        lambda: chilldkg.coordinator_step1(invalid_pmsgs1, params),
+        chilldkg.FaultyParticipantError,
+        1,
+    )
+    pmsg1_pool.append(bytes_to_hex(invalid_pmsg1))
+    error_cases.append(
+        {
+            "pmsg1Indices": [len(pmsg1_pool) - 1 if i == 1 else i for i in range(n)],
+            "params": params_asdict(params),
+            "expectedError": error,
+            "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment",
         }
     )
 
