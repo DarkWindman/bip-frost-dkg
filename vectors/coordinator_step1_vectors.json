@@ -16,7 +16,7 @@
         "  Verify it raises an exception matching expectedError.",
         "  Error objects may include 'participantId' (identifier of the blamed participant)."
     ],
-    "totalTests": 44,
+    "totalTests": 60,
     "testGroups": [
         {
             "pmsg1Pool": [
@@ -24,6 +24,10 @@
                 "037C42E200B601CD439CDEAA12FB2BD8949C566E59096AA9207165C6FF0602B1D6020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD17A5C832E385A79C54BB5E400CF3FA2DF8A747E7F362AA3345CB0097DAF2C715FAA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D14D27B6E1FE9BCEE26C96CD0B2CB18AE6A5D80C5792EA1FA2F09011B3F2596EE7",
                 "026F714517277FB154C47E487FBE415C25C0D0F79466F1479B31A8D78319978D8A0203E26DE13A90DC4465BF155DCE35DFED355FE1902F39E9B4139F038F12C04DDF68EFCB547A2ED10F9D35C10E8FFE3A5A7F049FF7FFBF5F7400586830FBAC2B6908C2742DE20520065E89CF8CF7DBD279063967C0E1E77A97297BFDDF28B58C1A03D1FD5A186167E5DE84B11C0F56E1FC6808D2DB35E6E3587243CF59DE605CB806A124DC237A739AD28D8624726DD0277B3B1D7D030019F0FBBA9EE12D6007FEE360BC33A121886C897AC86F4F99CD493743B05216D0408C88A32D90A109837B6547CAC26451623B282A4FC67A2E454E27C7437BA3F620C687F061E9B264652DD6",
                 "037C42E200B601CD439CDEAA12FB2BD8949C566E59096AA9207165C6FF0602B1D6020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD17A5C832E385A79C54BB5E400CF3FA2DF8A747E7F362AA3345CB0097DAF2C715FAA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D1",
+                "037C42E200B601CD439CDEAA12FB2BD8949C566E59096AA9207165C6FF0602B1D6020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141AA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D14D27B6E1FE9BCEE26C96CD0B2CB18AE6A5D80C5792EA1FA2F09011B3F2596EE7",
+                "020000000000000000000000000000000000000000000000000000000000000005020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD17A5C832E385A79C54BB5E400CF3FA2DF8A747E7F362AA3345CB0097DAF2C715FAA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D14D27B6E1FE9BCEE26C96CD0B2CB18AE6A5D80C5792EA1FA2F09011B3F2596EE7",
+                "037C42E200B601CD439CDEAA12FB2BD8949C566E59096AA9207165C6FF0602B1D6020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD1FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141AA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D14D27B6E1FE9BCEE26C96CD0B2CB18AE6A5D80C5792EA1FA2F09011B3F2596EE7",
+                "020000000000000000000000000000000000000000000000000000000000000005020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37022E7B7DD7A0B4A72097703E60648B615A4DDDF2D715A5E0992379537A44C13AD17A5C832E385A79C54BB5E400CF3FA2DF8A747E7F362AA3345CB0097DAF2C715FAA97DCA9CF742C4A54D5805B0705378C68129809D8D22A753A3F8F92FE61D7D14D27B6E1FE9BCEE26C96CD0B2CB18AE6A5D80C5792EA1FA2F09011B3F2596EE7",
                 "",
                 "037C42E200B601CD439CDEAA12FB2BD8949C566E59096AA9207165C6FF0602B1D6020584BF7D8C710F6A4988C6B16848C4BBA45A819107B2C49190E2D6FB666011AE53EF7BE0C965DBBA2418E1FAA16FB9CA5FC990337E0E1858F263A8B88AE081D053CB4BCA7D90B63225ABA7C40F4B86B1D2E91D0EEFC52657B70695BE96FEEF37"
             ],
@@ -215,7 +219,95 @@
                 {
                     "tcId": 10,
                     "pmsg1Indices": [
+                        0,
                         4,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 11,
+                    "pmsg1Indices": [
+                        0,
+                        5,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 12,
+                    "pmsg1Indices": [
+                        0,
+                        6,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 13,
+                    "pmsg1Indices": [
+                        0,
+                        7,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 14,
+                    "pmsg1Indices": [
+                        8,
                         1,
                         2
                     ],
@@ -233,10 +325,10 @@
                     "comment": "missing simplpedpop participant message at index 0"
                 },
                 {
-                    "tcId": 11,
+                    "tcId": 15,
                     "pmsg1Indices": [
                         0,
-                        5,
+                        9,
                         2
                     ],
                     "params": {
@@ -260,12 +352,16 @@
                 "02DA601E3FC8D21A247C5677D9CACFFE0BB86860BC1C233BECA0D97776AAE309DA832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52F4CDA3696B4B7701D9CA898B23E0211D9A3BB64CD130C329BDFC826BCBFCA13D563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B54825042D24EFCD6B3C4E2F29DFA11B55973C08DEADB120BA5B90EF12D74353B",
                 "02FB246B4866569A7A495CFFB1133DAF9096FE4FA22EDA6AF9D7A8F236F9C222B68A8C833B35FF0445F94744CBDE8FFC29CBBBFD3B7BA7F3B00A56E96EFA24F6C582EA017BA6A173AA31E4E9F2F5F74D1C4ABA2BBA5B9FACE5F3042B5B2323AB81038AA8962D7EBBF847CE551B1EF8D0D5E8A051B7FD6A29127709F35A6C18CED300EE7CAEA466336EF62D77586E88F1689219851C1473C34AA555FB08E2A7BD90977A1AB2888E05E016EFE2799D43300A3A576497D23F32CFBABE18A069512E2A96826AFB726FF50193F6F50E4CA0A630DEC81B68554EEFDA5331C04E7E7FFE7C1A",
                 "02DA601E3FC8D21A247C5677D9CACFFE0BB86860BC1C233BECA0D97776AAE309DA832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52F4CDA3696B4B7701D9CA898B23E0211D9A3BB64CD130C329BDFC826BCBFCA13D563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B",
+                "02DA601E3FC8D21A247C5677D9CACFFE0BB86860BC1C233BECA0D97776AAE309DA832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B54825042D24EFCD6B3C4E2F29DFA11B55973C08DEADB120BA5B90EF12D74353B",
+                "020000000000000000000000000000000000000000000000000000000000000005832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52F4CDA3696B4B7701D9CA898B23E0211D9A3BB64CD130C329BDFC826BCBFCA13D563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B54825042D24EFCD6B3C4E2F29DFA11B55973C08DEADB120BA5B90EF12D74353B",
+                "02DA601E3FC8D21A247C5677D9CACFFE0BB86860BC1C233BECA0D97776AAE309DA832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B54825042D24EFCD6B3C4E2F29DFA11B55973C08DEADB120BA5B90EF12D74353B",
+                "020000000000000000000000000000000000000000000000000000000000000005832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B8303F216E714F96E6AAE00E3FAAF5188FF6F66C71B932E10B17AA8403B17DE9A8F52F4CDA3696B4B7701D9CA898B23E0211D9A3BB64CD130C329BDFC826BCBFCA13D563259BE0136A48FE852FC559B1EA6DE9EB24A43FBE2B42E3F1AE85AB03BB99B54825042D24EFCD6B3C4E2F29DFA11B55973C08DEADB120BA5B90EF12D74353B",
                 "",
                 "02DA601E3FC8D21A247C5677D9CACFFE0BB86860BC1C233BECA0D97776AAE309DA832AE406B679DEE20F859D361B3C2A1A9EEED646F1B5B6761D1370889D2C0F4EFFFFB7792DD5B2EF16A87A3868280F745D4FAA4EB032695FF0E9285DB7155B83"
             ],
             "validTestCases": [
                 {
-                    "tcId": 12,
+                    "tcId": 16,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -285,7 +381,7 @@
             ],
             "errorTestCases": [
                 {
-                    "tcId": 13,
+                    "tcId": 17,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -305,7 +401,7 @@
                     "comment": "invalid threshold value"
                 },
                 {
-                    "tcId": 14,
+                    "tcId": 18,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -325,7 +421,7 @@
                     "comment": "invalid threshold value t > n"
                 },
                 {
-                    "tcId": 15,
+                    "tcId": 19,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -346,7 +442,7 @@
                     "comment": "hostpubkeys list contains an invalid value"
                 },
                 {
-                    "tcId": 16,
+                    "tcId": 20,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -368,7 +464,7 @@
                     "comment": "hostpubkeys list contains duplicate values"
                 },
                 {
-                    "tcId": 17,
+                    "tcId": 21,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -389,7 +485,7 @@
                     "comment": "hostpubkeys list contains an infinity point"
                 },
                 {
-                    "tcId": 18,
+                    "tcId": 22,
                     "pmsg1Indices": [
                         0,
                         1
@@ -408,7 +504,7 @@
                     "comment": "invalid pmsgs1: fewer entries than participants"
                 },
                 {
-                    "tcId": 19,
+                    "tcId": 23,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -429,7 +525,7 @@
                     "comment": "invalid pmsgs1: more entries than participants"
                 },
                 {
-                    "tcId": 20,
+                    "tcId": 24,
                     "pmsg1Indices": [
                         0,
                         3,
@@ -449,9 +545,97 @@
                     "comment": "participant (id 1) message has an enc_shares list of invalid length"
                 },
                 {
-                    "tcId": 21,
+                    "tcId": 25,
                     "pmsg1Indices": [
+                        0,
                         4,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 1
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 26,
+                    "pmsg1Indices": [
+                        0,
+                        5,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 1
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 27,
+                    "pmsg1Indices": [
+                        0,
+                        6,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 1
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 28,
+                    "pmsg1Indices": [
+                        0,
+                        7,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 1
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 29,
+                    "pmsg1Indices": [
+                        8,
                         1,
                         2
                     ],
@@ -469,10 +653,10 @@
                     "comment": "missing simplpedpop participant message at index 0"
                 },
                 {
-                    "tcId": 22,
+                    "tcId": 30,
                     "pmsg1Indices": [
                         0,
-                        5,
+                        9,
                         2
                     ],
                     "params": {
@@ -496,12 +680,16 @@
                 "034619FE6A2FF09FE393CACB98B0708545255926B9CB33103567AAF2EE4D23B05403D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BB9BC513A6059135E04745D8BA961BA2B73A8F109469632CACD2DEA19DD9F985D03F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D92660F6A85166FBC97DE076DD7F81CB81CF07262D7296453D47065FD31A952CA8C9",
                 "0250A0832ED8FECB459561A2BFE1103A29CD4B23D53B27B707376FE0E67562F200020F17B8706ED73D63DEA8F15898E59E062E761C8E04DC3BDD78092C006A73440F022DF27B11574AE811C767A2E2A8645E9D63910CFD74F52F65488A5A64133EFBDAACBC3B4D52DD7A762F752250E41218F5295C3DDFCFF43350759D74A62B695352CE3C302E8718BA21C85BED769AEF3846A88E691AE945D6EBA09F51ACB0143D1002522C52C88A6B0B1E9CF8943960E87722C1D5307069723C25B151939A58B08C10E0165D9516387D7C6A7EDE123BB40683A6037628D3853322CF37FE31A36960DABA80A39126B2817F0E441AFFB94ECB9C9133C9C377EDDC7BE2BB97A0A43675102F91CB07BEC0D3422EA4ADB05AB0264DFCBAA0D94EBB93D825110A8816C8D1F6",
                 "034619FE6A2FF09FE393CACB98B0708545255926B9CB33103567AAF2EE4D23B05403D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BB9BC513A6059135E04745D8BA961BA2B73A8F109469632CACD2DEA19DD9F985D03F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D926",
+                "034619FE6A2FF09FE393CACB98B0708545255926B9CB33103567AAF2EE4D23B05403D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD036414103F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D92660F6A85166FBC97DE076DD7F81CB81CF07262D7296453D47065FD31A952CA8C9",
+                "02000000000000000000000000000000000000000000000000000000000000000503D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BB9BC513A6059135E04745D8BA961BA2B73A8F109469632CACD2DEA19DD9F985D03F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D92660F6A85166FBC97DE076DD7F81CB81CF07262D7296453D47065FD31A952CA8C9",
+                "034619FE6A2FF09FE393CACB98B0708545255926B9CB33103567AAF2EE4D23B05403D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD036414103F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D92660F6A85166FBC97DE076DD7F81CB81CF07262D7296453D47065FD31A952CA8C9",
+                "02000000000000000000000000000000000000000000000000000000000000000503D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F0334032916F989086FB5C62722C096F0EC6A85808DB2BFA270227A72245BD7AC1BB9BC513A6059135E04745D8BA961BA2B73A8F109469632CACD2DEA19DD9F985D03F3FCD86C88731C94E5588CA37E072DBF0A968AF541994B5A5D3E6011C9D92660F6A85166FBC97DE076DD7F81CB81CF07262D7296453D47065FD31A952CA8C9",
                 "",
                 "034619FE6A2FF09FE393CACB98B0708545255926B9CB33103567AAF2EE4D23B05403D16A8AFDD68449C6C00FF346EC9D29EC8D3D681F3B2EC04616F0A75693940C2402BF150900B4B78A40CF51C1429F0C796B7EC6A4B9A6337B346895DAD6E7F4108D18AB016E948B6EE152EEC9B6AD07ADC102177C6060C5FA6AB774DE136D59657C62D596F9C9477FF09A14654D48AC94B9CF381221ED27DC26B0F224C70039771F"
             ],
             "validTestCases": [
                 {
-                    "tcId": 23,
+                    "tcId": 31,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -521,7 +709,7 @@
             ],
             "errorTestCases": [
                 {
-                    "tcId": 24,
+                    "tcId": 32,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -541,7 +729,7 @@
                     "comment": "invalid threshold value"
                 },
                 {
-                    "tcId": 25,
+                    "tcId": 33,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -561,7 +749,7 @@
                     "comment": "invalid threshold value t > n"
                 },
                 {
-                    "tcId": 26,
+                    "tcId": 34,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -582,7 +770,7 @@
                     "comment": "hostpubkeys list contains an invalid value"
                 },
                 {
-                    "tcId": 27,
+                    "tcId": 35,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -604,7 +792,7 @@
                     "comment": "hostpubkeys list contains duplicate values"
                 },
                 {
-                    "tcId": 28,
+                    "tcId": 36,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -625,7 +813,7 @@
                     "comment": "hostpubkeys list contains an infinity point"
                 },
                 {
-                    "tcId": 29,
+                    "tcId": 37,
                     "pmsg1Indices": [
                         0,
                         1
@@ -644,7 +832,7 @@
                     "comment": "invalid pmsgs1: fewer entries than participants"
                 },
                 {
-                    "tcId": 30,
+                    "tcId": 38,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -665,7 +853,7 @@
                     "comment": "invalid pmsgs1: more entries than participants"
                 },
                 {
-                    "tcId": 31,
+                    "tcId": 39,
                     "pmsg1Indices": [
                         0,
                         3,
@@ -685,9 +873,97 @@
                     "comment": "participant (id 1) message has an enc_shares list of invalid length"
                 },
                 {
-                    "tcId": 32,
+                    "tcId": 40,
                     "pmsg1Indices": [
+                        0,
                         4,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 3
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 41,
+                    "pmsg1Indices": [
+                        0,
+                        5,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 3
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 42,
+                    "pmsg1Indices": [
+                        0,
+                        6,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 3
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 43,
+                    "pmsg1Indices": [
+                        0,
+                        7,
+                        2
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3"
+                        ],
+                        "t": 3
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 44,
+                    "pmsg1Indices": [
+                        8,
                         1,
                         2
                     ],
@@ -705,10 +981,10 @@
                     "comment": "missing simplpedpop participant message at index 0"
                 },
                 {
-                    "tcId": 33,
+                    "tcId": 45,
                     "pmsg1Indices": [
                         0,
-                        5,
+                        9,
                         2
                     ],
                     "params": {
@@ -733,12 +1009,16 @@
                 "0246EC025D2E096D23F52B755D1DED61C58608B23C67087E90555F52C428AFA61B0330B5D6D8F21A3E1B47E225C6B837C6D5E74B7DD52B67482C6D3D386A5C19369B0BCEDABBF632561F24A4BECEBE1F22F9260C830E17EFB80D88EA5919C98871B78AA91A74C8F2B20F83FEB22B9599E9B416D49706181998EC04E3FDF0AAEB789F0251B5F3A899402AAE586113B18A5B2D1F12A49330AEDD5AC2314FF07EB151A9B28BB736697045FBC5CC366FA156F25C21760942BE0ED2FE35C8AE3B24C70E8392E71F4DD29880FB7C913D3BC68F1A488EE93FBF92D99639C927F56330C180DCEB705221AADCA90841FF0FD21EAE2C72D95DBB6867CF7AD1441BEF0F7264E25CC6A8A3503F93E535C36E3DED76843ECFDFD3A1246B7CC8C806A1F6E86C5D05DD95",
                 "0244EEC31E9105EB71FDDD1F777889003AD61D6C3116EAACF48B23F885AA617F130259C4EEE9CA0E391339ABE9010023AFA0A50FD403CBDDDCDEB801F406DE707B819777334881108C5C19F548963F3BF8F5E693969A30B2F749498262D8AC956E0D91EB42FB355114D3F0589AFBF10289A015EF05D1DF365BD1A0468582C0706760024461A885A565BD85A57B3047CBEE3D70C7E9C400C5FB2C0146F02944AB36C42E0A7D6A1780AB7000EC43EAD753D49C5A5DD08236F37B43ED82D40C97D03E8B4823339CBF4313CD658B22977779325944D49B9E928138E470B4E90C34F4D761778EB690F7F7EC769034FE7FFFB06D4EBFBABA9E4D442925D4BE8046D0BEACD19D4DE6699AA11B5C59E23743B81327C68D6E73B5770B834FACEC47E5CF3B5FACE4",
                 "034D3BEF06BFB2780C527B2A16CC2819160C8569EB94AF89F16B4F81C604E09417033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26036DEF7297E97F0D229BBB7B004AABEC90F7E4A769934376ED220FD78D79C3095CBE24CC80C556589A0B8E155C7DA2429FD3BE69817C8E237B911EDB37605569C237D0D39F4904C0294A6F38AA1ED43C3769BD1DC4372201CEC2A36D328F613A85CDE8E4E2F05D5A97365681A84FC3074416AFF8C91FDEF197C73047E0D3B43C76",
+                "034D3BEF06BFB2780C527B2A16CC2819160C8569EB94AF89F16B4F81C604E09417033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26036DEF7297E97F0D229BBB7B004AABEC90F7E4A769934376ED220FD78D79C3095CFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD036414137D0D39F4904C0294A6F38AA1ED43C3769BD1DC4372201CEC2A36D328F613A85CDE8E4E2F05D5A97365681A84FC3074416AFF8C91FDEF197C73047E0D3B43C76FDCCC6A8DC55BA01C9EF8EB155ADE1051E5EA74FDC1B150FEA588BBD377C3565",
+                "020000000000000000000000000000000000000000000000000000000000000005033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26036DEF7297E97F0D229BBB7B004AABEC90F7E4A769934376ED220FD78D79C3095CBE24CC80C556589A0B8E155C7DA2429FD3BE69817C8E237B911EDB37605569C237D0D39F4904C0294A6F38AA1ED43C3769BD1DC4372201CEC2A36D328F613A85CDE8E4E2F05D5A97365681A84FC3074416AFF8C91FDEF197C73047E0D3B43C76FDCCC6A8DC55BA01C9EF8EB155ADE1051E5EA74FDC1B150FEA588BBD377C3565",
+                "034D3BEF06BFB2780C527B2A16CC2819160C8569EB94AF89F16B4F81C604E09417033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26036DEF7297E97F0D229BBB7B004AABEC90F7E4A769934376ED220FD78D79C3095CFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD036414137D0D39F4904C0294A6F38AA1ED43C3769BD1DC4372201CEC2A36D328F613A85CDE8E4E2F05D5A97365681A84FC3074416AFF8C91FDEF197C73047E0D3B43C76FDCCC6A8DC55BA01C9EF8EB155ADE1051E5EA74FDC1B150FEA588BBD377C3565",
+                "020000000000000000000000000000000000000000000000000000000000000005033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26036DEF7297E97F0D229BBB7B004AABEC90F7E4A769934376ED220FD78D79C3095CBE24CC80C556589A0B8E155C7DA2429FD3BE69817C8E237B911EDB37605569C237D0D39F4904C0294A6F38AA1ED43C3769BD1DC4372201CEC2A36D328F613A85CDE8E4E2F05D5A97365681A84FC3074416AFF8C91FDEF197C73047E0D3B43C76FDCCC6A8DC55BA01C9EF8EB155ADE1051E5EA74FDC1B150FEA588BBD377C3565",
                 "",
                 "034D3BEF06BFB2780C527B2A16CC2819160C8569EB94AF89F16B4F81C604E09417033E8D05176C0F89D48D8FFA1F6E218B129B0DB5D47572443FB7AB8574F7B09C4662DADAF9B9E9DC0E28322D2FB7F459D3F76D8739CE5E48667B9831813B90B9EB4F0825157039DE1B1C0C9DB2F52C4F51E112A113E2F436FF61CF94254B3E2A26"
             ],
             "validTestCases": [
                 {
-                    "tcId": 34,
+                    "tcId": 46,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -760,7 +1040,7 @@
             ],
             "errorTestCases": [
                 {
-                    "tcId": 35,
+                    "tcId": 47,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -782,7 +1062,7 @@
                     "comment": "invalid threshold value"
                 },
                 {
-                    "tcId": 36,
+                    "tcId": 48,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -804,7 +1084,7 @@
                     "comment": "invalid threshold value t > n"
                 },
                 {
-                    "tcId": 37,
+                    "tcId": 49,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -827,7 +1107,7 @@
                     "comment": "hostpubkeys list contains an invalid value"
                 },
                 {
-                    "tcId": 38,
+                    "tcId": 50,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -851,7 +1131,7 @@
                     "comment": "hostpubkeys list contains duplicate values"
                 },
                 {
-                    "tcId": 39,
+                    "tcId": 51,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -874,7 +1154,7 @@
                     "comment": "hostpubkeys list contains an infinity point"
                 },
                 {
-                    "tcId": 40,
+                    "tcId": 52,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -895,7 +1175,7 @@
                     "comment": "invalid pmsgs1: fewer entries than participants"
                 },
                 {
-                    "tcId": 41,
+                    "tcId": 53,
                     "pmsg1Indices": [
                         0,
                         1,
@@ -918,7 +1198,7 @@
                     "comment": "invalid pmsgs1: more entries than participants"
                 },
                 {
-                    "tcId": 42,
+                    "tcId": 54,
                     "pmsg1Indices": [
                         0,
                         4,
@@ -940,9 +1220,105 @@
                     "comment": "participant (id 1) message has an enc_shares list of invalid length"
                 },
                 {
-                    "tcId": 43,
+                    "tcId": 55,
                     "pmsg1Indices": [
+                        0,
                         5,
+                        2,
+                        3
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3",
+                            "02A480743556B0DC66F3F25262A0120AC231DEB6936D4BF8FA37ECA83C395DC8A8"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 56,
+                    "pmsg1Indices": [
+                        0,
+                        6,
+                        2,
+                        3
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3",
+                            "02A480743556B0DC66F3F25262A0120AC231DEB6936D4BF8FA37ECA83C395DC8A8"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 57,
+                    "pmsg1Indices": [
+                        0,
+                        7,
+                        2,
+                        3
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3",
+                            "02A480743556B0DC66F3F25262A0120AC231DEB6936D4BF8FA37ECA83C395DC8A8"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid encrypted secret share",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an out-of-range enc_share"
+                },
+                {
+                    "tcId": 58,
+                    "pmsg1Indices": [
+                        0,
+                        8,
+                        2,
+                        3
+                    ],
+                    "params": {
+                        "hostpubkeys": [
+                            "03AED316469060698D774150EFD7F8F406A2BAB516DD7D22CB258323C59C6417F3",
+                            "03AEB5AE20783D4858F6767747963F144C7DB8ABA328625CC8A87F7676D8CDEEE7",
+                            "021A48BBCCAC751AE9EC1EA7A7F8D421D5FD60AAB44E6D2F37B31873098A77B7A3",
+                            "02A480743556B0DC66F3F25262A0120AC231DEB6936D4BF8FA37ECA83C395DC8A8"
+                        ],
+                        "t": 2
+                    },
+                    "expectedError": {
+                        "type": "FaultyParticipantError",
+                        "message": "invalid VSS commitment",
+                        "participantId": 1
+                    },
+                    "comment": "participant (index 1) message has an off-curve x-coordinate in the VSS commitment"
+                },
+                {
+                    "tcId": 59,
+                    "pmsg1Indices": [
+                        9,
                         1,
                         2,
                         3
@@ -962,10 +1338,10 @@
                     "comment": "missing simplpedpop participant message at index 0"
                 },
                 {
-                    "tcId": 44,
+                    "tcId": 60,
                     "pmsg1Indices": [
                         0,
-                        6,
+                        10,
                         2,
                         3
                     ],
