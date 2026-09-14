@@ -81,6 +81,10 @@ def params_asdict(params: chilldkg.SessionParams) -> dict:
     return {"hostpubkeys": bytes_list_to_hex(params.hostpubkeys), "t": params.t}
 
 
+def tg_id(t: int, n: int) -> str:
+    return f"{t}of{n}"
+
+
 def dkg_output_asdict(dkg_output: chilldkg.DKGOutput) -> dict:
     secshare = bytes_to_hex(dkg_output.secshare) if dkg_output.secshare else None
     return {
