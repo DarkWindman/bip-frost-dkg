@@ -225,24 +225,25 @@ def generate_recover_vectors():
         pstates2.append(state)
         pmsgs2.append(msg)
     cmsg2, cout, crec = chilldkg.coordinator_finalize(cstate, pmsgs2)
-    pout, prec = chilldkg.participant_finalize(pstates2[0], cmsg2)
-    assert prec == crec
 
-    # --- Valid test case: participant recovery ---
-    pout_rec, params_rec = chilldkg.participant_recover(hostseckeys[0], prec)
-    assert pout_rec == pout
-    assert params_rec == params
-    valid_cases.append(
-        {
-            "hostseckey": bytes_to_hex(hostseckeys[0]),
-            "recoveryData": bytes_to_hex(prec),
-            "expectedOutput": {
-                "dkgOutput": dkg_output_asdict(pout_rec),
-                "params": params_asdict(params_rec),
-            },
-            "comment": "participant recovery",
-        }
-    )
+    # --- Valid test case: participant recovery, one per participant index ---
+    for i in range(len(hostpubkeys)):
+        pout, prec = chilldkg.participant_finalize(pstates2[i], cmsg2)
+        assert prec == crec
+        pout_rec, params_rec = chilldkg.participant_recover(hostseckeys[i], prec)
+        assert pout_rec == pout
+        assert params_rec == params
+        valid_cases.append(
+            {
+                "hostseckey": bytes_to_hex(hostseckeys[i]),
+                "recoveryData": bytes_to_hex(prec),
+                "expectedOutput": {
+                    "dkgOutput": dkg_output_asdict(pout_rec),
+                    "params": params_asdict(params_rec),
+                },
+                "comment": f"participant recovery (idx = {i})",
+            }
+        )
     # --- Valid test case: coordinator recovery ---
     cout_rec, params_rec = chilldkg.coordinator_recover(crec)
     assert cout_rec == cout
@@ -424,6 +425,32 @@ def generate_recover_vectors():
             "recoveryData": bytes_to_hex(crec),
             "expectedError": error,
             "comment": "host secret key is out of range",
+        }
+    )
+    # --- Error test case: recovery data shorter than the threshold field ---
+    short_crec = crec[:3]
+    error = expect_exception(
+        lambda: chilldkg.coordinator_recover(short_crec), chilldkg.RecoveryDataError
+    )
+    error_cases.append(
+        {
+            "hostseckey": None,
+            "recoveryData": bytes_to_hex(short_crec),
+            "expectedError": error,
+            "comment": "recovery data is shorter than 4 bytes",
+        }
+    )
+    # --- Error test case: trailing byte after the per-participant data ---
+    padded_crec = crec + b"\x00"
+    error = expect_exception(
+        lambda: chilldkg.coordinator_recover(padded_crec), chilldkg.RecoveryDataError
+    )
+    error_cases.append(
+        {
+            "hostseckey": None,
+            "recoveryData": bytes_to_hex(padded_crec),
+            "expectedError": error,
+            "comment": "recovery data length is not a multiple of the per-participant size",
         }
     )
 
