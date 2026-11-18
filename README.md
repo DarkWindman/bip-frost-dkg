@@ -127,7 +127,7 @@ a backup of a single *host secret key* specific to the device,
 (the essential parts of) the public transcript of the session,
 and the corresponding success certificate.
 To simplify the interface, we combine the transcript data and the session certificate into a single byte string called the *recovery data*,
-which is common to all participants and does not need to be kept confidential.
+which contains the same transcript for all participants and does not need to be kept confidential.
 Recovering a device that has participated in a DKG session then requires just the device's host secret key and the recovery data,
 the latter of which can be obtained from any cooperative participant (or the coordinator) or from an untrusted backup provider.
 
@@ -150,7 +150,7 @@ In summary, we aim for the following design goals:
  - **Conditional agreement**: If a ChillDKG session succeeds for one honest participant, this participant will be able to convince every other honest participant that the session has succeeded.
  - **No restriction on threshold**: Like the FROST signing protocol, ChillDKG supports any threshold `t <= n`, including `t - 1 >= n/2` (also called "dishonest majority").
  - **Broad applicability**: ChillDKG supports a wide range of scenarios, from those where the signing devices are owned and connected by a single individual to those where multiple owners manage the devices from distinct locations.
- - **Simple backups**: ChillDKG allows a participant to recover all its outputs of a DKG session, including the secret share, using its host secret key and common recovery data shared among all participants and the coordinator. This eliminates the need for session-specific backups, simplifying user experience.
+ - **Simple backups**: ChillDKG allows a participant to recover all its outputs of a DKG session, including the secret share, using its host secret key and recovery data that can be obtained from any other participant or the coordinator. This eliminates the need for session-specific backups, simplifying user experience.
  - **Untrusted coordinator**: Like FROST, ChillDKG uses a coordinator that relays messages between the participants. This simplifies the network topology, and the coordinator additionally reduces communication overhead by aggregating some of the messages. A faulty coordinator can force the DKG to fail but cannot negatively affect the security of the DKG.
  - **Per-participant public shares**: ChillDKG supports partial signature verification in FROST signing sessions.
  - **Taproot-safe threshold public key**: ChillDKG prevents malicious participants from embedding a hidden Taproot commitment to a script path in the threshold public key.
@@ -452,7 +452,8 @@ a successful ChillDKG participant can deterministically reproduce its secret sha
 
 This property is leveraged to offer a backup and recovery functionality:
 ChillDKG outputs a string called *recovery data* which is the concatenation of the transcript `eq_input` and the success certificate `cert`.
-The recovery data, which is the same for every participant, can be used by any participant together with the host secret key to recover the full output of the DKG session.
+The recovery data, which contains the same transcript for every participant, can be used by any participant together with the host secret key to recover the full output of the DKG session.
+The success certificate is not unique (a participant can create another valid signature on the transcript), so the recovery data of different parties may differ in the certificate, but any valid recovery data of the session yields the same outputs.
 
 Crucially, the recovery data carries proof that the DKG session took place:
 any recovering participant can extract their own valid signature on the transcript from the success certificate.
@@ -533,7 +534,7 @@ See [BIP 445](bip-0445.md) for details on signing.
 
 [^id-position-mapping]: The secret sharing is as expected by [BIP 445](bip-0445.md), i.e., there exists a scalar polynomial `f` of degree `t - 1` such that `f(0)` is the discrete logarithm of the threshold public key and every participant with identifier `i` has secret share `f(i + 1)`.
 
-Moreover, all parties obtain *recovery data* (common to all participants and the coordinator), whose purpose is detailed in the next subsection.
+Moreover, all parties obtain *recovery data* (containing the same transcript for all participants and the coordinator), whose purpose is detailed in the next subsection.
 
 ### Backup and Recovery
 
@@ -546,7 +547,7 @@ To facilitate backups of a DKG session,
 ChillDKG offers the possibility to recover a participant's secret share and the threshold info from the participant's host secret key and the recovery data of the specific session.
 As a result, a full backup of a participant consists of the host secret key as well as the recovery data of all DKG sessions the participant has successfully participated in.
 
-Since the recovery data is the same for all participants,
+Since any valid copy of the recovery data of the session suffices,
 if a participant loses the backup of the recovery data of the DKG session,
 they can request it from any other participant or the coordinator.
 Moreover, the recovery data contains secrets only in encrypted form and is self-authenticating
@@ -610,7 +611,7 @@ it will still be possible to spend the funds,
 and even recovered participants can participate in signing sessions.)
 
 To facilitate this confirmation process,
-ChillDKG provides optional functionality for creating and verifying acknowledgment signatures on the recovery data.
+ChillDKG provides optional functionality for creating and verifying acknowledgment signatures on the transcript contained in the recovery data.
 
 ### Blaming Faulty Parties
 
@@ -1308,6 +1309,13 @@ signature on the recovery data. This can be used for an optional
 acknowledgment round where participants acknowledge that they have
 successfully received the complete recovery data.
 
+The acknowledgment signature covers the session transcript contained in
+the recovery data but not the success certificate. A session can have
+several valid certificates (e.g., if a participant signs the transcript
+again), so the recovery data held by different participants may differ in
+the certificate. Acknowledgments are nevertheless compatible as long as
+the recovery data belongs to the same session.
+
 *Arguments*:
 
 - `hostseckey` - Participant's long-term host secret key (32 bytes).
@@ -1331,8 +1339,8 @@ successfully received the complete recovery data.
 - `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
 - `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 128` does
   not hold.
-- `RecoveryDataError` - If the recovery data is invalid or does not match
-  the provided parameters.
+- `RecoveryDataError` - If the recovery data is invalid (e.g., contains an
+  invalid certificate) or does not match the provided parameters.
 
 #### participant\_recovery\_acks\_verify
 
@@ -1360,8 +1368,8 @@ received the recovery data before the threshold public key is used
 - `DuplicateHostPubkeyError` - If `hostpubkeys` contains duplicates.
 - `ThresholdOrCountError` - If `1 <= t <= len(hostpubkeys) <= 128` does
   not hold.
-- `RecoveryDataError` - If the recovery data is invalid or does not match
-  the provided parameters.
+- `RecoveryDataError` - If the recovery data is invalid (e.g., contains an
+  invalid certificate) or does not match the provided parameters.
 - `InvalidRecoveryAckError` - If any recovery acknowledgment signature is
   invalid. Note that this does NOT mean the DKG failed
   (reaching this point implies the DKG itself was successful).
